@@ -1,0 +1,287 @@
+const express = require('express');
+const mongoose = require('mongoose');
+const morgan = require('morgan');
+const bodyParser = require('body-parser');
+const session = require('express-session');
+const dotenv = require('dotenv');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const passport = require('passport');
+const User = require('./model/User');
+const path = require('path');
+
+dotenv.config();
+mongoose.connect('mongodb+srv://twichautomations:weautomate@cluster0.lp2jztg.mongodb.net/volunteerng');
+
+
+
+
+const cors = require("cors");
+
+
+// Enable CORS
+
+
+const db = mongoose.connection;
+
+db.on('error', (err) => {
+    console.log(err);
+});
+
+db.once('open', () => {
+    console.log("Database Connection Established Succesfully");
+});
+
+
+
+
+const app = express();
+
+app.use(cors({
+    origin: "http://localhost:3000",
+    credentials: true,  // Required to allow cookies
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Credentials", "true");
+    next();
+});
+
+app.use(express.static(path.join(__dirname, 'cyber')));
+
+app.use(morgan('dev'));
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
+
+app.use(express.json()); 
+
+
+// Session Middleware
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+      cookie: {
+        secure: process.env.NODE_ENV === 'production', // Only true in production
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000 // 1-day expiration
+    }
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
+ // <-- This is needed to parse JSON requests
+
+
+
+
+
+
+
+
+// Google OAuth Strategy
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: "/auth/google_callback"
+}, async (accessToken, refreshToken, profile, done) => {
+    // console.log("Google Profile Data:", profile); 
+    // Check if user exists in DB
+
+    let user = await User.findOne({ googleId: profile.id });
+    if (!user) {
+        user = new User({
+            googleId: profile.id,
+            displayName: profile.displayName,
+            contactEmail: profile.emails[0].value,
+            image: profile.photos[0].value,
+        });
+        await user.save();
+    }
+   
+
+    return done(null, user);
+}));
+
+passport.serializeUser((user, done) => {
+    console.log("Serializing user:", user); // Debugging
+    done(null, user.googleId);  // Store googleId, NOT _id
+});
+
+passport.deserializeUser(async (googleId, done) => {
+    console.log("Deserializing user with googleId:", googleId); // Debugging
+    try {
+        const user = await User.findOne({ googleId });
+        if (!user) {
+            console.log("User not found in database.");
+            return done(null, false);
+        }
+        console.log("User found:", user);
+        done(null, user);
+    } catch (err) {
+        console.error("Error in deserialization:", err);
+        done(err);
+    }
+});
+
+
+
+
+
+
+// Google Auth Route
+app.get('/auth/google',
+    passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+// Google Callback Route
+app.get("/auth/google_callback",
+    passport.authenticate('google', { failureRedirect: '/',
+        successRedirect: '/dashboard',
+     }),
+    // (req, res) => {
+       
+    //     res.redirect('/dashboard');
+    // }
+);
+
+// Logout Route
+app.get('/logout', (req, res) => {
+    req.logout(() => {
+        res.sendFile(path.join(__dirname, 'cyber', 'index.html'));
+    });
+});
+
+// Dashboard (Protected)
+app.get('/dashboard', (req, res) => {
+    if (!req.isAuthenticated()) {
+        return res.status(200);
+    }
+
+
+    res.json({
+        "message": "Welcome!"
+    });// Sends "Works" as a response
+});
+
+
+app.get('/user_data', (req, res) => {
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+    res.json({ userId: req.user.googleId });
+});
+
+
+
+app.get('/home', (req, res) => {
+    res.sendFile(path.join(__dirname, 'cyber', 'index.html')); // Sends "Works" as a response
+  });
+
+
+
+  
+
+app.get('/user', async (req, res) => {
+    // if (!req.isAuthenticated()) {
+    //     return res.status(401).json({ error: 'User not authenticated' });
+    // }
+    console.log("Session User:", req.user);
+
+    let user = await User.findOne({ googleId: req.user.googleId });
+    
+
+    // console.log(req.user.id);
+    // console.log( req.user.emails[0].value);
+    // console.log(req.user.photos[0]);
+
+    console.log("User is",user);
+    
+    res.json({
+        id: user.googleId,
+        displayName: user.displayName,
+        email: user.contactEmail,
+        
+        
+    });
+});
+
+
+app.post("/submit_answer", async (req, res) => {
+    try {
+        const receivedData = req.body; // Get the data from the request body
+        console.log("Received Data:", receivedData);
+        const { userId} = req.body;
+        
+         
+
+        // Use req.user which is populated by Passport when authenticated
+        let user = await User.findOne({ googleId: userId });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        user.points = req.body.score;
+
+        switch(req.body.courses){
+
+            case "web_security":
+            user.web_security  != true ? user.web_security = req.body.passed:"";
+            if (req.body.passed == true) {user.code_hunter = true;}
+            else{user.code_hunter = false;}
+            break;
+            case "cryptography_fundamentals":
+             user.cryptography_fundamentals != true ? user.cryptography_fundamentals = req.body.passed: "";
+             break;
+             case "network_security":
+             user.network_security != true ? user.network_security = req.body.passed: "";
+             if (req.body.passed == true) {user.network_guardian = true;}
+             else{user.network_guardian = false;}
+             break;
+             case "malware_analysis":
+            user.malware_analysis != true ? user.malware_analysis = req.body.passed: "";
+            if (req.body.passed == true) {user.bug_hunter = true;}
+            else{user.bug_hunter = false;}
+            break;
+
+            case "forensics":
+            user.forensics != true ? user.forensics = req.body.passed: "";
+            break;
+            
+        }
+
+        await user.save(); // Save the updated user document
+
+        console.log("Current Upadate", user);
+
+        // Also use req.user.googleId for consistency
+        let player = await Leaderboard.findOne({ googleId: userId });
+
+        player.score = req.body.score;
+
+        await player.save(); // Save the updated user document
+
+       
+        
+        // Send response back
+        res.status(200).json({ message: "Data received successfully!", data: receivedData });
+    } catch (error) {
+        console.error("Error:", error);
+        // Include error.message for better debugging
+        res.status(500).json({ message: error.message || "Server error" });
+    }
+});
+
+
+
+
+
+
+
+
+app.listen(3000, () => {
+    console.log('Server is running on port 3000');
+});
+

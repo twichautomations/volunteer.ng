@@ -8,6 +8,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const passport = require('passport');
 const User = require('./model/User');
 const path = require('path');
+const MongoStore = require('connect-mongo');
 
 dotenv.config();
 mongoose.connect('mongodb+srv://twichautomations:weautomate@cluster0.lp2jztg.mongodb.net/volunteerng');
@@ -103,7 +104,7 @@ app.use(passport.session());
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "https://volunteer-ng.onrender.com/auth/google_callback"
+    callbackURL: "/auth/google_callback"
 }, async (accessToken, refreshToken, profile, done) => {
     // console.log("Google Profile Data:", profile); 
     // Check if user exists in DB
@@ -155,7 +156,7 @@ app.get('/auth/google',
 );
 
 // Google Callback Route
-app.get("/auth/google_callback",
+app.get("https://volunteer-ng.onrender.com/auth/google_callback",
     passport.authenticate('google', { failureRedirect: '/' }),
     (req, res) => {
         req.session.save(() => {

@@ -8,6 +8,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const passport = require('passport');
 const User = require('./model/User');
 const path = require('path');
+const MongoStore = require('connect-mongo');
 
 dotenv.config();
 mongoose.connect('mongodb+srv://twichautomations:weautomate@cluster0.lp2jztg.mongodb.net/volunteerng');
@@ -37,7 +38,7 @@ db.once('open', () => {
 const app = express();
 
 app.use(cors({
-    origin: "https://volunteer-ng.onrender.com",
+    origin: "http://localhost:3000",
     credentials: true,  // Required to allow cookies
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"]
@@ -58,34 +59,16 @@ app.use(express.json());
 
 
 // Session Middleware
-// app.use(session({
-//     secret: process.env.SESSION_SECRET,
-//     resave: false,
-//     saveUninitialized: false,
-//       cookie: {
-//         secure: process.env.NODE_ENV === 'production', // Only true in production
-//         httpOnly: true,
-//         maxAge: 24 * 60 * 60 * 1000 // 1-day expiration
-//     }
-// }));
-
 app.use(session({
-  secret: process.env.SESSION_SECRET, // Replace with your own secret
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: process.env.MONGO_URI, // Your MongoDB connection string
-    ttl: 14 * 24 * 60 * 60, // Session expiration time in seconds (14 days)
-    autoRemove: 'native' // Automatically remove expired sessions
-  }),
-  cookie: {
-    maxAge: 14 * 24 * 60 * 60 * 1000, // Cookie expiration time in milliseconds (14 days)
-    secure: process.env.NODE_ENV === 'production', // Set to true if using HTTPS
-    httpOnly: true
-  }
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+      cookie: {
+        secure: process.env.NODE_ENV === 'production', // Only true in production
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000 // 1-day expiration
+    }
 }));
-
-app.set('trust proxy', 1);
 
 // Initialize Passport
 app.use(passport.initialize());
@@ -103,7 +86,7 @@ app.use(passport.session());
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "https://volunteer-ng.onrender.com/auth/google_callback"
+    callbackURL: "/auth/google_callback"
 }, async (accessToken, refreshToken, profile, done) => {
     // console.log("Google Profile Data:", profile); 
     // Check if user exists in DB
@@ -156,14 +139,14 @@ app.get('/auth/google',
 
 // Google Callback Route
 app.get("/auth/google_callback",
-    passport.authenticate('google', { failureRedirect: '/' }),
-    (req, res) => {
-        req.session.save(() => {
-            res.redirect('/dashboard');
-        });
-    }
+    passport.authenticate('google', { failureRedirect: '/',
+        successRedirect: '/dashboard',
+     }),
+    // (req, res) => {
+       
+    //     res.redirect('/dashboard');
+    // }
 );
-
 
 // Logout Route
 app.get('/logout', (req, res) => {
@@ -175,15 +158,14 @@ app.get('/logout', (req, res) => {
 // Dashboard (Protected)
 app.get('/dashboard', (req, res) => {
     if (!req.isAuthenticated()) {
-        return res.status(401).send('Unauthorized');
+        return res.status(200);
     }
 
-     res.json({
+
+    res.json({
         "message": "Welcome!"
     });// Sends "Works" as a response
-    // ... serve dashboard content
 });
-
 
 
 app.get('/user_data', (req, res) => {
@@ -303,3 +285,4 @@ app.post("/submit_answer", async (req, res) => {
 app.listen(3000, () => {
     console.log('Server is running on port 3000');
 });
+

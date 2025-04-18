@@ -104,7 +104,7 @@ app.use(passport.session());
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "/auth/google_callback"
+    callbackURL: "https://volunteer-ng.onrender.com/auth/google_callback"
 }, async (accessToken, refreshToken, profile, done) => {
     // console.log("Google Profile Data:", profile); 
     // Check if user exists in DB

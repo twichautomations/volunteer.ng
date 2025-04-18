@@ -156,7 +156,7 @@ app.get('/auth/google',
 );
 
 // Google Callback Route
-app.get("https://volunteer-ng.onrender.com/auth/google_callback",
+app.get("/auth/google_callback",
     passport.authenticate('google', { failureRedirect: '/' }),
     (req, res) => {
         req.session.save(() => {

@@ -161,7 +161,7 @@ app.get("/auth/google_callback",
     passport.authenticate('google', { failureRedirect: '/' }),
     (req, res) => {
         req.session.save(() => {
-            res.redirect('https://volunteerng.vercel.app/join');
+            res.redirect('/dashboard');
         });
     }
 );
@@ -180,18 +180,19 @@ app.get('/dashboard', (req, res) => {
         return res.status(401).send('Unauthorized');
     }
 
-     res.json({
-        "message": "Welcome!"
-    });// Sends "Works" as a response
+    res.redirect("https://volunteerng.vercel.app/join")
+    //  res.json({
+    //     "message": "Welcome!"
+    // });// Sends "Works" as a response
     // ... serve dashboard content
 });
 
 
 
 app.get('/user_data', (req, res) => {
-    // if (!req.isAuthenticated()) {
-    //     return res.status(401).json({ error: "Unauthorized" });
-    // }
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
     res.json({ userId: req.user.googleId });
 });
 

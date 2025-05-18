@@ -190,38 +190,14 @@ app.get('/dashboard', (req, res) => {
 
 
 
-app.get('/user_data', (req, res) => {
-    // if (!req.isAuthenticated()) {
-    //     return res.status(401).json({ error: "Unauthorized" });
-    // }
-    res.json({ userId: req.user.Id });
-});
+// app.get('/user_data', (req, res) => {
+//     // if (!req.isAuthenticated()) {
+//     //     return res.status(401).json({ error: "Unauthorized" });
+//     // }
+//     res.json({ userId: req.user.Id });
+// });
 
 
-app.get('/userid', async (req, res) => {
-    try {
-        // If using authentication, uncomment the lines below
-        if (!req.isAuthenticated()) {
-            return res.status(401).json({ error: 'User not authenticated' });
-        }
-
-        // Log the user object from the session (for debugging)
-        console.log("Session User:", req.user);
-
-        // Make sure req.user exists
-        if (!req.user) {
-            return res.status(404).json({ error: 'No user in session' });
-        }
-
-        // Extract and send the user ID (adjust key if different)
-        const userId = req.user._id || req.user.id;
-
-        return res.json({ userId });
-    } catch (error) {
-        console.error('Error fetching user:', error);
-        return res.status(500).json({ error: 'Server error' });
-    }
-});
 
 
 
@@ -257,21 +233,30 @@ app.get('/user', async (req, res) => {
 
 
 
-// Endpoint to receive and save userType
-app.post('/save-user-type', (req, res) => {
-    const { userType } = req.body;
+app.post('/save-user-type', async (req, res) => {
+    try {
+        const { userId, role } = req.body;
 
-    if (!userType) {
-        return res.status(400).json({ message: 'userType is required' });
+        if (!userId || !role) {
+            return res.status(400).json({ message: "Missing userId or role in request body" });
+        }
+
+        // Find user by Google ID
+        const user = await User.findOne({ googleId: userId });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Update user's role
+        user.role = role;
+        await user.save();
+
+        res.status(200).json({ message: "User role updated successfully!" });
+    } catch (error) {
+        console.error("Error in /save-user-type:", error);
+        res.status(500).json({ message: "Internal server error" });
     }
-
-    // Save to in-memory array
-    users.push({ id: users.length + 1, userType });
-
-    return res.status(201).json({
-        message: 'User type saved successfully',
-        data: { id: users.length, userType }
-    });
 });
 
 

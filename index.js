@@ -195,10 +195,32 @@ app.get('/user_data', (req, res) => {
 });
 
 
+app.get('/userid', async (req, res) => {
+    try {
+        // If using authentication, uncomment the lines below
+        if (!req.isAuthenticated()) {
+            return res.status(401).json({ error: 'User not authenticated' });
+        }
 
-app.get('/home', (req, res) => {
-    res.sendFile(path.join(__dirname, 'cyber', 'index.html')); // Sends "Works" as a response
-  });
+        // Log the user object from the session (for debugging)
+        console.log("Session User:", req.user);
+
+        // Make sure req.user exists
+        if (!req.user) {
+            return res.status(404).json({ error: 'No user in session' });
+        }
+
+        // Extract and send the user ID (adjust key if different)
+        const userId = req.user._id || req.user.id;
+
+        return res.json({ userId });
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        return res.status(500).json({ error: 'Server error' });
+    }
+});
+
+
 
 
 

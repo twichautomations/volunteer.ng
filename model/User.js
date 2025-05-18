@@ -7,13 +7,13 @@ const UserSchema = new Schema({
         type: String
     },
    
-    contactPhone: {
+    phoneNumber: {
         type: String
     },
     googleId: {
         type: String
     },
-    contactEmail: {
+   email: {
         type: String
     },
     role: {

@@ -189,9 +189,9 @@ app.get('/dashboard', (req, res) => {
 
 
 app.get('/user_data', (req, res) => {
-    if (!req.isAuthenticated()) {
-        return res.status(401).json({ error: "Unauthorized" });
-    }
+    // if (!req.isAuthenticated()) {
+    //     return res.status(401).json({ error: "Unauthorized" });
+    // }
     res.json({ userId: req.user.googleId });
 });
 

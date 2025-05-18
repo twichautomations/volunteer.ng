@@ -16,15 +16,15 @@ const UserSchema = new Schema({
     contactEmail: {
         type: String
     },
-    type: {
+    role: {
         type: String
     },
     heading: {
         type: String
     },
-    orgName: {
-        type: String
-    },
+    // orgName: {
+    //     type: String
+    // },
     description: {
         type: String
     },

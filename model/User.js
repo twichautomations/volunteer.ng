@@ -6,7 +6,16 @@ const UserSchema = new Schema({
     displayName: {
         type: String
     },
-   
+    
+     
+    websiteURL: {
+        type: String
+    },
+      
+    phoneNumber: {
+        type: String
+    },
+
     phoneNumber: {
         type: String
     },

@@ -179,8 +179,9 @@ app.get('/dashboard', (req, res) => {
     if (!req.isAuthenticated()) {
         return res.status(401).send('Unauthorized');
     }
-
-    res.redirect("https://volunteerng.vercel.app/join")
+    const userId = req.user.googleId;
+    res.redirect(`https://volunteerng.vercel.app/join?userId=${userId}`);
+    // res.redirect("https://volunteerng.vercel.app/join")
     //  res.json({
     //     "message": "Welcome!"
     // });// Sends "Works" as a response

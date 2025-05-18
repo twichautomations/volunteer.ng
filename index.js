@@ -38,11 +38,12 @@ db.once('open', () => {
 const app = express();
 
 app.use(cors({
-    origin: "https://volunteer-ng.onrender.com",
-    credentials: true,  // Required to allow cookies
+    origin: true, // Allow all origins dynamically
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Credentials", "true");
     next();
@@ -251,70 +252,27 @@ app.get('/user', async (req, res) => {
 });
 
 
-app.post("/submit_answer", async (req, res) => {
-    try {
-        const receivedData = req.body; // Get the data from the request body
-        console.log("Received Data:", receivedData);
-        const { userId} = req.body;
-        
-         
 
-        // Use req.user which is populated by Passport when authenticated
-        let user = await User.findOne({ googleId: userId });
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
 
-        user.points = req.body.score;
 
-        switch(req.body.courses){
+// Endpoint to receive and save userType
+app.post('/save-user-type', (req, res) => {
+    const { userType } = req.body;
 
-            case "web_security":
-            user.web_security  != true ? user.web_security = req.body.passed:"";
-            if (req.body.passed == true) {user.code_hunter = true;}
-            else{user.code_hunter = false;}
-            break;
-            case "cryptography_fundamentals":
-             user.cryptography_fundamentals != true ? user.cryptography_fundamentals = req.body.passed: "";
-             break;
-             case "network_security":
-             user.network_security != true ? user.network_security = req.body.passed: "";
-             if (req.body.passed == true) {user.network_guardian = true;}
-             else{user.network_guardian = false;}
-             break;
-             case "malware_analysis":
-            user.malware_analysis != true ? user.malware_analysis = req.body.passed: "";
-            if (req.body.passed == true) {user.bug_hunter = true;}
-            else{user.bug_hunter = false;}
-            break;
-
-            case "forensics":
-            user.forensics != true ? user.forensics = req.body.passed: "";
-            break;
-            
-        }
-
-        await user.save(); // Save the updated user document
-
-        console.log("Current Upadate", user);
-
-        // Also use req.user.googleId for consistency
-        let player = await Leaderboard.findOne({ googleId: userId });
-
-        player.score = req.body.score;
-
-        await player.save(); // Save the updated user document
-
-       
-        
-        // Send response back
-        res.status(200).json({ message: "Data received successfully!", data: receivedData });
-    } catch (error) {
-        console.error("Error:", error);
-        // Include error.message for better debugging
-        res.status(500).json({ message: error.message || "Server error" });
+    if (!userType) {
+        return res.status(400).json({ message: 'userType is required' });
     }
+
+    // Save to in-memory array
+    users.push({ id: users.length + 1, userType });
+
+    return res.status(201).json({
+        message: 'User type saved successfully',
+        data: { id: users.length, userType }
+    });
 });
+
+
 
 
 

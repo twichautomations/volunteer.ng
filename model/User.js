@@ -7,7 +7,10 @@ const UserSchema = new Schema({
         type: String
     },
     
-     
+    skills: {
+        type: [String]
+    },
+    
     websiteURL: {
         type: String
     },

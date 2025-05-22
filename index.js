@@ -259,8 +259,49 @@ app.post('/save-user-type', async (req, res) => {
     }
 });
 
+app.post('/save-user-data', async (req, res) => {
+    try {
+        const { userId } = req.body;
 
+        if (!userId) {
+            return res.status(400).json({ message: "Missing userId in request body" });
+        }
 
+        // Find user by Google ID
+        const user = await User.findOne({ googleId: userId });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const userRole = user.role || "Not set";
+
+        if(userRole == "volunteer"){
+            const { displayName, phone, industry, experience, school, company, sosecGraduate } = req.body;
+
+            user.displayName = displayName;
+            user.phone = phone;
+            user.industry = industry;
+            user.experience = experience;
+            user.school = school;
+            user.company = company;
+            user.sosecGraduate = sosecGraduate;
+            user.displayName = displayName;
+
+        }
+        await user.save();
+        console.log(`User ${user.googleId} has role: ${userRole}`);
+
+        res.status(200).json({
+            message: "User data saved successfully!",
+            role: userRole,
+            status: "true"
+        });
+    } catch (error) {
+        console.error("Error in /save-user-data:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
 
 
 

@@ -117,6 +117,14 @@ passport.use(new GoogleStrategy({
             displayName: profile.displayName,
             contactEmail: profile.emails[0].value,
             image: profile.photos[0].value,
+           displayName : "",
+           phone : "",
+           industry : "",
+           experience : "",
+           school : "",
+           company : "",
+           sosecGraduate : "",
+           displayName : "",
         });
         await user.save();
     }

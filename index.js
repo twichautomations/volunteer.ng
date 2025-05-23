@@ -287,6 +287,7 @@ app.post('/save-user-data', async (req, res) => {
             user.company = company;
             user.sosecGraduate = sosecGraduate;
             user.displayName = displayName;
+            console.log ("I AM HERE ");
 
         }
         await user.save();

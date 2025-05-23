@@ -269,7 +269,8 @@ app.post('/save-user-type', async (req, res) => {
 
 app.post('/save-user-data', async (req, res) => {
     try {
-        const { userId } = req.body;
+        // const { userId } = req.body;
+        const userId = req.body.userId;
 
         if (!userId) {
             return res.status(400).json({ message: "Missing userId in request body" });

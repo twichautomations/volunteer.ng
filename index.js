@@ -296,9 +296,9 @@ app.post('/save-user-data', async (req, res) => {
             user.sosecGraduate = sosecGraduate;
             user.displayName = displayName;
             console.log ("I AM HERE ");
-
+            await user.save();
         }
-        await user.save();
+       
         console.log(`User ${user.googleId} has role: ${userRole}`);
 
         res.status(200).json({

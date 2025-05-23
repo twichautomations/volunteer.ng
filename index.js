@@ -276,7 +276,7 @@ app.post('/save-user-data', async (req, res) => {
 
         const userRole = user.role || "Not set";
 
-        if(userRole == "volunteer"){
+        if( userRole == "volunteer"){
             const { displayName, phone, industry, experience, school, company, sosecGraduate } = req.body;
 
             user.displayName = displayName;

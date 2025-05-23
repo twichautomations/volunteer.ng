@@ -14,12 +14,19 @@ const UserSchema = new Schema({
     websiteURL: {
         type: String
     },
-      
-    phoneNumber: {
+      school: {
         type: String
     },
-
-    phoneNumber: {
+    company: {
+        type: String
+    },
+    experience: {
+        type: String
+    },
+    industry: {
+        type: String
+    },
+    phone: {
         type: String
     },
     googleId: {
@@ -55,6 +62,9 @@ const UserSchema = new Schema({
     endDate: {
         type: String
     },
+    sosecGraduate: {
+        type: String
+    },
     requirements: {
         type: [String],
     },
@@ -70,17 +80,15 @@ const UserSchema = new Schema({
     email: {
         type: String
     },
-    email: {
-        type: String
-    },
-
     image: {
         type: String
     },
     favorites: [{
         type: String  // Store product IDs as strings
     }]
-}, {timestamps:true}
+}, {timestamps:true,
+    strict: false
+}
 );
 
 

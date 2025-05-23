@@ -285,16 +285,16 @@ app.post('/save-user-data', async (req, res) => {
         const userRole = user.role || "Not set";
 
         if( userRole == "volunteer"){
-            const { displayName, phone, industry, experience, school, company, sosecGraduate } = req.body;
+            // const { displayName, phone, industry, experience, school, company, sosecGraduate } = req.body;
 
-            user.displayName = displayName;
-            user.phone = phone;
-            user.industry = industry;
-            user.experience = experience;
-            user.school = school;
-            user.company = company;
-            user.sosecGraduate = sosecGraduate;
-            user.displayName = displayName;
+            user.displayName = req.body.displayName;
+            user.phone = req.body.phone;
+            user.industry = req.body.industry;
+            user.experience = req.body.experience;
+            user.school = req.body.school;
+            user.company = req.body.company;
+            user.sosecGraduate = req.body.sosecGraduate;
+            
             console.log ("I AM HERE ");
             await user.save();
         }

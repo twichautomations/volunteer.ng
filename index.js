@@ -16,9 +16,7 @@ const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 
 
-const cloudinary = require('cloudinary').v2;
-const multer = require('multer');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
 
 
 
@@ -251,7 +249,7 @@ catch (error) {
 
 app.get('/user', async (req, res) => {
     try {
-        const { userId } = req.body; // GET requests usually don't use body
+        const userId = req.headers['userId']; // GET requests usually don't use body
         // const userId = req.query.userId; // better practice: use query params for GET
 
         if (!userId) {
@@ -267,7 +265,7 @@ app.get('/user', async (req, res) => {
         console.log("User is", user);
 
         res.json({
-            id: user.googleId,
+         
             displayName: user.displayName,
             email: user.contactEmail,
             image: user.image,

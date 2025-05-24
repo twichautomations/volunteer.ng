@@ -183,11 +183,14 @@ app.get('/logout', (req, res) => {
 });
 
 // Dashboard (Protected)
-app.get('/dashboard', (req, res) => {
+app.get('/dashboard', async (req, res) => {
     if (!req.isAuthenticated()) {
         return res.status(401).send('Unauthorized');
     }
     const userId = req.user.googleId;
+
+    let user = await User.findOne({ googleId:userId});
+    
     res.redirect(`https://volunteerng.vercel.app/join?userId=${userId}`);
  
 });
@@ -207,9 +210,10 @@ app.get('/user', async (req, res) => {
     // if (!req.isAuthenticated()) {
     //     return res.status(401).json({ error: 'User not authenticated' });
     // }
-    console.log("Session User:", req.user);
+    const { userId } = req.body;
 
-    let user = await User.findOne({ googleId: req.user.googleId });
+
+    let user = await User.findOne({ googleId:userId});
     
 
     // console.log(req.user.id);
@@ -222,6 +226,7 @@ app.get('/user', async (req, res) => {
         id: user.googleId,
         displayName: user.displayName,
         email: user.contactEmail,
+        image: user.image,
         
         
     });

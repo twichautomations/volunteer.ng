@@ -189,21 +189,11 @@ app.get('/dashboard', (req, res) => {
     }
     const userId = req.user.googleId;
     res.redirect(`https://volunteerng.vercel.app/join?userId=${userId}`);
-    // res.redirect("https://volunteerng.vercel.app/join")
-    //  res.json({
-    //     "message": "Welcome!"
-    // });// Sends "Works" as a response
-    // ... serve dashboard content
+ 
 });
 
 
 
-// app.get('/user_data', (req, res) => {
-//     // if (!req.isAuthenticated()) {
-//     //     return res.status(401).json({ error: "Unauthorized" });
-//     // }
-//     res.json({ userId: req.user.Id });
-// });
 
 
 
@@ -297,6 +287,22 @@ app.post('/save-user-data', async (req, res) => {
             user.sosecGraduate = req.body.sosecGraduate;
             
             console.log ("I AM HERE ");
+            await user.save();
+        }
+
+        if( userRole == "organisation"){
+            // const { displayName, phone, industry, experience, school, company, sosecGraduate } = req.body;
+
+            user.displayName = req.body.displayName;
+            user.phoneNumber = req.body.phonenumber;
+            user.address = req.body.address;
+            user.description = req.body.description;
+            user.school = req.body.school;
+            user.websiteURL = req.body.websiteURL;
+            user.industry = req.body.industry;
+            user.organizationType = req.body.organizationType;
+            
+            console.log ("I AM organisation ");
             await user.save();
         }
        

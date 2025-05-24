@@ -184,15 +184,29 @@ app.get('/logout', (req, res) => {
 
 // Dashboard (Protected)
 app.get('/dashboard', async (req, res) => {
+    try{
+
+    
     if (!req.isAuthenticated()) {
         return res.status(401).send('Unauthorized');
     }
     const userId = req.user.googleId;
 
     let user = await User.findOne({ googleId:userId});
+
+    if (!user.role || user.role === '') {
+        return res.redirect(`https://volunteerng.vercel.app/onboard?userId=${user.googleId}`);
+    }
+    else{
+        return res.redirect(`https://volunteerng.vercel.app/explore?userId=${user.googleId}`);
+    }
     
     res.redirect(`https://volunteerng.vercel.app/join?userId=${userId}`);
- 
+}
+catch (error) {
+    console.error("Error in /dashboard", error);
+    res.status(500).json({ message: "Internal server error" });
+}
 });
 
 

@@ -10,6 +10,18 @@ const User = require('./model/User');
 const Project = require('./model/Project');
 const path = require('path');
 const MongoStore = require('connect-mongo');
+const cloudinary = require('cloudinary').v2;
+const multer = require('multer');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+
+
+const cloudinary = require('cloudinary').v2;
+const multer = require('multer');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+
+
 
 dotenv.config();
 mongoose.connect('mongodb+srv://twichautomations:weautomate@cluster0.lp2jztg.mongodb.net/volunteerng');
@@ -59,6 +71,24 @@ app.use(bodyParser.urlencoded({
 
 app.use(express.json()); 
 
+// Configure Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+  });
+  
+
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+      folder: 'project_uploads', // optional folder in Cloudinary
+      allowed_formats: ['jpg', 'png', 'jpeg', 'webp']
+    }
+  });
+  
+  const upload = multer({ storage });
+  
 
 app.use(session({
   secret: process.env.SESSION_SECRET, // Replace with your own secret
@@ -219,29 +249,36 @@ catch (error) {
 
 
 
-  
-
 app.get('/user', async (req, res) => {
-    // if (!req.isAuthenticated()) {
-    //     return res.status(401).json({ error: 'User not authenticated' });
-    // }
-    const { userId } = req.body;
+    try {
+        const { userId } = req.body; // GET requests usually don't use body
+        // const userId = req.query.userId; // better practice: use query params for GET
 
+        if (!userId) {
+            return res.status(400).json({ error: 'Missing userId in request' });
+        }
 
-    let user = await User.findOne({ googleId:userId});
-    
+        const user = await User.findOne({ googleId: userId });
 
-    console.log("User is",user);
-    
-    res.json({
-        id: user.googleId,
-        displayName: user.displayName,
-        email: user.contactEmail,
-        image: user.image,
-        
-        
-    });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        console.log("User is", user);
+
+        res.json({
+            id: user.googleId,
+            displayName: user.displayName,
+            email: user.contactEmail,
+            image: user.image,
+        });
+
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
+
 
 
 

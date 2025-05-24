@@ -269,6 +269,7 @@ app.get('/user', async (req, res) => {
             displayName: user.displayName,
             email: user.contactEmail,
             image: user.image,
+            role: user.role,
         });
 
     } catch (error) {

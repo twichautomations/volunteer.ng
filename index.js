@@ -7,6 +7,7 @@ const dotenv = require('dotenv');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const passport = require('passport');
 const User = require('./model/User');
+const Project = require('./model/Project');
 const path = require('path');
 const MongoStore = require('connect-mongo');
 
@@ -49,7 +50,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(express.static(path.join(__dirname, 'cyber')));
+
 
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({
@@ -58,18 +59,6 @@ app.use(bodyParser.urlencoded({
 
 app.use(express.json()); 
 
-
-// Session Middleware
-// app.use(session({
-//     secret: process.env.SESSION_SECRET,
-//     resave: false,
-//     saveUninitialized: false,
-//       cookie: {
-//         secure: process.env.NODE_ENV === 'production', // Only true in production
-//         httpOnly: true,
-//         maxAge: 24 * 60 * 60 * 1000 // 1-day expiration
-//     }
-// }));
 
 app.use(session({
   secret: process.env.SESSION_SECRET, // Replace with your own secret
@@ -177,10 +166,22 @@ app.get("/auth/google_callback",
 
 // Logout Route
 app.get('/logout', (req, res) => {
-    req.logout(() => {
-        res.sendFile(path.join(__dirname, 'cyber', 'index.html'));
+    req.logout((err) => {
+        if (err) {
+            console.error("Logout error:", err);
+            return res.status(500).json({ message: "Error during logout" });
+        }
+
+        req.session.destroy((err) => {
+            if (err) {
+                console.error("Session destruction error:", err);
+            }
+            // Optionally redirect to home or login page
+            res.redirect('https://volunteerng.vercel.app/explore');
+        });
     });
 });
+
 
 // Dashboard (Protected)
 app.get('/dashboard', async (req, res) => {
@@ -201,7 +202,7 @@ app.get('/dashboard', async (req, res) => {
         return res.redirect(`https://volunteerng.vercel.app/explore?userId=${user.googleId}`);
     }
     
-    res.redirect(`https://volunteerng.vercel.app/join?userId=${userId}`);
+    // res.redirect(`https://volunteerng.vercel.app/join?userId=${userId}`);
 }
 catch (error) {
     console.error("Error in /dashboard", error);
@@ -229,10 +230,6 @@ app.get('/user', async (req, res) => {
 
     let user = await User.findOne({ googleId:userId});
     
-
-    // console.log(req.user.id);
-    // console.log( req.user.emails[0].value);
-    // console.log(req.user.photos[0]);
 
     console.log("User is",user);
     
@@ -335,6 +332,51 @@ app.post('/save-user-data', async (req, res) => {
     } catch (error) {
         console.error("Error in /save-user-data:", error);
         res.status(500).json({ message: "Internal server error" });
+    }
+});
+
+
+
+app.post('/save-project-data', async (req, res) => {
+    try {
+        if (!req.body.heading || !req.body.orgName || !req.body.status) {
+            return res.status(400).json({ message: "Missing required fields: heading, orgName, or status" });
+        }
+
+        const project = new Project();
+
+        project.userId = req.body.userId;
+        project.image = req.body.image;
+        project.type = req.body.type;
+        project.duration = req.body.duration;
+        project.heading = req.body.heading;
+        project.orgName = req.body.orgName;
+        project.description = req.body.description;
+        project.category = req.body.category;
+        project.status = req.body.status;
+        project.location = req.body.location;
+        project.startDate = req.body.startDate;
+        project.endDate = req.body.endDate;
+        project.requirements = req.body.requirements;
+        project.benefits = req.body.benefits;
+        project.contactEmail = req.body.contactEmail;
+        project.contactPhone = req.body.contactPhone;
+        project.maxVolunteers = req.body.maxVolunteers;
+        project.tags = req.body.tags;
+        project.createdAt = req.body.createdAt;
+
+        console.log("Saving project:", project);
+
+        await project.save();
+
+        return res.status(201).json({
+            message: "Project saved successfully",
+            project: project
+        });
+
+    } catch (error) {
+        console.error("Error saving project:", error);
+        return res.status(500).json({ message: "Internal server error" });
     }
 });
 

@@ -249,7 +249,7 @@ catch (error) {
 
 app.get('/user', async (req, res) => {
     try {
-        const userId = req.headers['userId']; // GET requests usually don't use body
+        const userId = req.headers['userid']; // GET requests usually don't use body
         // const userId = req.query.userId; // better practice: use query params for GET
         console.log(req.headers);
 

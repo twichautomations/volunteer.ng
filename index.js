@@ -376,9 +376,9 @@ app.post('/save-user-data', async (req, res) => {
 
 app.post('/save-project-data', async (req, res) => {
     try {
-        if (!req.body.heading || !req.body.orgName || !req.body.status) {
-            return res.status(400).json({ message: "Missing required fields: heading, orgName, or status" });
-        }
+        // if (!req.body.heading || !req.body.orgName || !req.body.status) {
+        //     return res.status(400).json({ message: "Missing required fields: heading, orgName, or status" });
+        // }
 
         const project = new Project();
 

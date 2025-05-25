@@ -374,7 +374,7 @@ app.post('/save-user-data', async (req, res) => {
 
 
 
-app.post('/save-project-data', async (req, res) => {
+app.post('/save-project-data', upload.single('image'), async (req, res) => {
     try {
         // if (!req.body.heading || !req.body.orgName || !req.body.status) {
         //     return res.status(400).json({ message: "Missing required fields: heading, orgName, or status" });
@@ -383,7 +383,7 @@ app.post('/save-project-data', async (req, res) => {
         const project = new Project();
 
         project.userId = req.body.userId;
-        project.image = req.body.image;
+        project.image = req.file.path;
         project.type = req.body.type;
         project.duration = req.body.duration;
         project.heading = req.body.heading;

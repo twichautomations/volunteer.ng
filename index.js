@@ -204,11 +204,13 @@ app.get('/logout', (req, res) => {
             if (err) {
                 console.error("Session destruction error:", err);
             }
-            // Optionally redirect to home or login page
-            res.redirect('https://volunteerng.vercel.app/explore');
+
+            // ✅ Return JSON success response
+            res.status(200).json({ message: "Logged out successfully" });
         });
     });
 });
+
 
 
 // Dashboard (Protected)
@@ -417,6 +419,20 @@ app.post('/save-project-data', upload.single('image'), async (req, res) => {
     }
 });
 
+
+
+// GET all projects
+app.get('/projects', async (req, res) => {
+  try {
+    const projects = await Project.find(); // You can filter or paginate here
+    res.status(200).json(projects);
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    res.status(500).json({ message: 'Server error while fetching projects' });
+  }
+});
+
+module.exports = router;
 
 
 

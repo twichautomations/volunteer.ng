@@ -229,7 +229,7 @@ app.get('/dashboard', async (req, res) => {
         return res.redirect(`https://volunteerng.vercel.app/onboard?userId=${user.googleId}`);
     }
     else{
-        return res.redirect(`https://volunteerng.vercel.app/explore?userId=${user.googleId}`);
+        return res.redirect(`https://volunteerng.vercel.app/project?userId=${user.googleId}`);
     }
     
     // res.redirect(`https://volunteerng.vercel.app/join?userId=${userId}`);
@@ -376,7 +376,7 @@ app.post('/save-user-data', async (req, res) => {
 
 
 
-app.post('/save-project-data', upload.single('image'), async (req, res) => {
+app.post('/save-project-data',  async (req, res) => {
     try {
         // if (!req.body.heading || !req.body.orgName || !req.body.status) {
         //     return res.status(400).json({ message: "Missing required fields: heading, orgName, or status" });
@@ -385,7 +385,7 @@ app.post('/save-project-data', upload.single('image'), async (req, res) => {
         const project = new Project();
 
         project.userId = req.body.userId;
-        project.image = req.file.path;
+        project.image = req.body.image;
         project.type = req.body.type;
         project.duration = req.body.duration;
         project.heading = req.body.heading;

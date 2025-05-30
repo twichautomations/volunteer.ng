@@ -226,7 +226,7 @@ app.get('/dashboard', async (req, res) => {
     let user = await User.findOne({ googleId:userId});
 
     if (!user.role || user.role === '') {
-        return res.redirect(`https://volunteerng.vercel.app/onboard?userId=${user.googleId}`);
+        return res.redirect(`https://volunteerng.vercel.app/join?userId=${user.googleId}`);
     }
     else if ( user.role == "volunteer"){
         return res.redirect(`https://volunteerng.vercel.app/onboarding/volunteer?userId=${user.googleId}`);

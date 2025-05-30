@@ -14,6 +14,9 @@ const ProjectSchema = new Schema({
     duration: {
         type: String
     },
+    public_id: {
+        type: String
+    },
     heading: {
         type: String
     },

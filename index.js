@@ -390,6 +390,7 @@ app.post('/save-project-data',  async (req, res) => {
         project.creatorId = req.body.userId;
         project.image = req.body.image;
         project.type = req.body.type;
+        project.public_id = req.body.public_id;
         project.duration = req.body.duration;
         project.heading = req.body.heading;
         project.orgName = req.body.orgName;
@@ -424,6 +425,8 @@ app.post('/save-project-data',  async (req, res) => {
 
 
 
+
+
 // GET all projects
 app.get('/projects', async (req, res) => {
   try {
@@ -435,7 +438,38 @@ app.get('/projects', async (req, res) => {
   }
 });
 
-
+app.delete('/delete-project/:userId/:projectId', async (req, res) => {
+    const { userId, projectId } = req.params;
+  
+    try {
+      if (!mongoose.Types.ObjectId.isValid(projectId)) {
+        return res.status(400).json({ message: 'Invalid project ID' });
+      }
+  
+      const project = await Project.findOne({
+        _id: new mongoose.Types.ObjectId(projectId),
+        creatorId: userId,
+      });
+  
+      if (!project) {
+        return res.status(403).json({ message: 'Unauthorized or project not found' });
+      }
+  
+      // Delete image from Cloudinary if public_id is stored
+      if (project.public_id) {
+        await cloudinary.uploader.destroy(project.public_id);
+      }
+  
+      // Then delete the project
+      await Project.deleteOne({ _id: projectId });
+  
+      res.status(200).json({ message: 'Project and image deleted successfully' });
+    } catch (error) {
+      console.error('Delete error:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+  
 
 
 

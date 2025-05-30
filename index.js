@@ -348,7 +348,7 @@ app.post('/save-user-data', async (req, res) => {
             await user.save();
         }
 
-        if( userRole == "organisation"){
+        if( userRole == "organization"){
             // const { displayName, phone, industry, experience, school, company, sosecGraduate } = req.body;
 
             user.displayName = req.body.displayName;
@@ -387,7 +387,7 @@ app.post('/save-project-data',  async (req, res) => {
 
         const project = new Project();
 
-        project.userId = req.body.userId;
+        project.creatorId = req.body.userId;
         project.image = req.body.image;
         project.type = req.body.type;
         project.duration = req.body.duration;

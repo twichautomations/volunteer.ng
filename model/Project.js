@@ -20,6 +20,9 @@ const ProjectSchema = new Schema({
     orgName: {
         type: String
     },
+    creatorId: {
+        type: String
+    },
     description: {
         type: String
     },

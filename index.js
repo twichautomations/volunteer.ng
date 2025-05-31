@@ -523,18 +523,17 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
         return res.status(400).json({ message: 'Invalid project ID format' });
       }
   
-      // Find project
       const project = await Project.findById(projectId);
       if (!project) {
         return res.status(404).json({ message: 'Project not found' });
       }
   
-      // Verify ownership
+      // Check if the user is the creator
       if (project.creatorId.toString() !== userId) {
         return res.status(403).json({ message: 'Unauthorized to edit this project' });
       }
   
-      // Update explicitly
+      // Apply updates with fallback to current values
       project.image = image || project.image;
       project.type = type || project.type;
       project.duration = duration || project.duration;
@@ -559,11 +558,13 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
         message: 'Project updated successfully',
         project
       });
+  
     } catch (err) {
-      console.error('Update error:', err);
-      res.status(500).json({ message: 'Server error during project update' });
+      console.error('Error updating project:', err);
+      res.status(500).json({ message: 'Server error while updating project' });
     }
   });
+  
 
 app.listen(3000, () => {
     console.log('Server is running on port 3000');

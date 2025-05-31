@@ -470,8 +470,100 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
     }
   });
   
+  app.get('/project/:projectId', async (req, res) => {
+    const { projectId } = req.params;
+  
+    try {
+      // Validate projectId
+      if (!mongoose.Types.ObjectId.isValid(projectId)) {
+        return res.status(400).json({ message: 'Invalid project ID format' });
+      }
+  
+      const project = await Project.findById(projectId);
+  
+      if (!project) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+  
+      res.status(200).json(project);
+    } catch (err) {
+      console.error('Error fetching project:', err);
+      res.status(500).json({ message: 'Server error while fetching project' });
+    }
+  });
 
 
+  //edit or update a project
+
+  app.put('/update-project/:projectId', async (req, res) => {
+    const { projectId } = req.params;
+    const {
+      userId,
+      image,
+      type,
+      duration,
+      heading,
+      orgName,
+      description,
+      category,
+      status,
+      location,
+      startDate,
+      endDate,
+      requirements,
+      benefits,
+      contactEmail,
+      contactPhone,
+      maxVolunteers,
+      tags
+    } = req.body;
+  
+    try {
+      if (!mongoose.Types.ObjectId.isValid(projectId)) {
+        return res.status(400).json({ message: 'Invalid project ID format' });
+      }
+  
+      // Find project
+      const project = await Project.findById(projectId);
+      if (!project) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+  
+      // Verify ownership
+      if (project.creatorId.toString() !== userId) {
+        return res.status(403).json({ message: 'Unauthorized to edit this project' });
+      }
+  
+      // Update explicitly
+      project.image = image || project.image;
+      project.type = type || project.type;
+      project.duration = duration || project.duration;
+      project.heading = heading || project.heading;
+      project.orgName = orgName || project.orgName;
+      project.description = description || project.description;
+      project.category = category || project.category;
+      project.status = status || project.status;
+      project.location = location || project.location;
+      project.startDate = startDate || project.startDate;
+      project.endDate = endDate || project.endDate;
+      project.requirements = requirements || project.requirements;
+      project.benefits = benefits || project.benefits;
+      project.contactEmail = contactEmail || project.contactEmail;
+      project.contactPhone = contactPhone || project.contactPhone;
+      project.maxVolunteers = maxVolunteers || project.maxVolunteers;
+      project.tags = tags || project.tags;
+  
+      await project.save();
+  
+      res.status(200).json({
+        message: 'Project updated successfully',
+        project
+      });
+    } catch (err) {
+      console.error('Update error:', err);
+      res.status(500).json({ message: 'Server error during project update' });
+    }
+  });
 
 app.listen(3000, () => {
     console.log('Server is running on port 3000');

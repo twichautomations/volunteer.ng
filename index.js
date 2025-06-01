@@ -518,7 +518,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       maxVolunteers,
       tags
     } = req.body;
-  const userId = request.body.userId;
+  const userId = req.body.userId;
     try {
       if (!mongoose.Types.ObjectId.isValid(projectId)) {
         return res.status(400).json({ message: 'Invalid project ID format' });

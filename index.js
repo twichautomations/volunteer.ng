@@ -529,7 +529,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       }
   
       // Check if the user is the creator
-      if (project.creatorId.toString() !== userId) {
+      if (project.creatorId != userId) {
         return res.status(403).json({ message: 'Unauthorized to edit this project' });
       }
   

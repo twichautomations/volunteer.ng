@@ -28,6 +28,7 @@ mongoose.connect('mongodb+srv://twichautomations:weautomate@cluster0.lp2jztg.mon
 
 
 const cors = require("cors");
+const { request } = require('http');
 
 
 // Enable CORS
@@ -498,7 +499,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
   app.put('/update-project/:projectId', async (req, res) => {
     const { projectId } = req.params;
     const {
-      userId,
+      
       image,
       type,
       duration,
@@ -517,7 +518,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       maxVolunteers,
       tags
     } = req.body;
-  
+  const userId = request.body.userId;
     try {
       if (!mongoose.Types.ObjectId.isValid(projectId)) {
         return res.status(400).json({ message: 'Invalid project ID format' });

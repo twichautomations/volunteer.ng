@@ -39,6 +39,9 @@ const ProjectSchema = new Schema({
     location: {
         type: String
     },
+    duration: {
+        type: String
+    },
     startDate: {
         type: String
     },

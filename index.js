@@ -352,12 +352,13 @@ app.post('/save-user-data', async (req, res) => {
         if( userRole == "volunteer"){
             // const { displayName, phone, industry, experience, school, company, sosecGraduate } = req.body;
 
-            user.displayName = req.body.displayName;
+            user.displayName = req.body.volunteer.displayName;
             user.phone = req.body.phone;
             user.industry = req.body.industry;
             user.experience = req.body.experience;
             user.school = req.body.school;
             user.company = req.body.company;
+            user.skills = req.body.skills;
             user.sosecGraduate = req.body.sosecGraduate;
             
             console.log ("I AM HERE ");
@@ -418,6 +419,7 @@ app.post('/save-project-data',  async (req, res) => {
         project.endDate = req.body.endDate;
         project.requirements = req.body.requirements;
         project.benefits = req.body.benefits;
+        project.duration = req.body.duration;
         project.contactEmail = req.body.contactEmail;
         project.contactPhone = req.body.contactPhone;
         project.maxVolunteers = req.body.maxVolunteers;
@@ -566,6 +568,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       project.status = status || project.status;
       project.location = location || project.location;
       project.startDate = startDate || project.startDate;
+      project.duration = duration || project.duration;
       project.endDate = endDate || project.endDate;
       project.requirements = requirements || project.requirements;
       project.benefits = benefits || project.benefits;

@@ -533,6 +533,12 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       if (project.creatorId != userId) {
         return res.status(403).json({ message: 'Unauthorized to edit this project' });
       }
+
+      const hasVolunteers = project.volunteers && project.volunteers.length > 0;
+
+      if (hasVolunteers) {
+        return res.status(403).json({ message: 'Cannot edit project: Volunteers have already joined' });
+      }
   
       // Apply updates with fallback to current values
       project.image = image || project.image;

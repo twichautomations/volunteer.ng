@@ -238,16 +238,16 @@ app.get('/dashboard', async (req, res) => {
         return res.redirect(`https://volunteerng.vercel.app/onboarding/volunteer?userId=${user.googleId}`);
     }
     
-    else if ( user.role == "organization" && user.phone === ""){
+    else if ( user.role == "organization" && user.industry === ""){
       console.log("user has started registration but not completed");
         return res.redirect(`https://volunteerng.vercel.app/onboarding/org?userId=${user.googleId}`);
     }
-    else if ( user.role == "volunteer" && user.phone != ""){
+    else if ( user.role == "volunteer" && user.industry != ""){
       console.log("user has started registration and completed");
       return res.redirect(`https://volunteerng.vercel.app/project/volunteer`);
   }
 
-  else if ( user.role == "organization" && user.phone != ""){
+  else if ( user.role == "organization" && user.industry != ""){
     console.log("user has started registration and completed");
     return res.redirect(`https://volunteerng.vercel.app/project/organization`);
 }

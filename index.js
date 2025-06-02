@@ -230,20 +230,25 @@ app.get('/dashboard', async (req, res) => {
     let user = await User.findOne({ googleId:userId});
 
     if (!user.role || user.role === '') {
+      console.log("User has not registred at all");
         return res.redirect(`https://volunteerng.vercel.app/join?userId=${user.googleId}`);
     }
     else if ( user.role == "volunteer"  && user.phone === ""){
+      console.log("user has started registration but not completed");
         return res.redirect(`https://volunteerng.vercel.app/onboarding/volunteer?userId=${user.googleId}`);
     }
     
     else if ( user.role == "organization" && user.phone === ""){
+      console.log("user has started registration but not completed");
         return res.redirect(`https://volunteerng.vercel.app/onboarding/org?userId=${user.googleId}`);
     }
     else if ( user.role == "volunteer" && user.phone != ""){
+      console.log("user has started registration and completed");
       return res.redirect(`https://volunteerng.vercel.app/project/volunteer`);
   }
 
   else if ( user.role == "organization" && user.phone != ""){
+    console.log("user has started registration and completed");
     return res.redirect(`https://volunteerng.vercel.app/project/organization`);
 }
     // res.redirect(`https://volunteerng.vercel.app/join?userId=${userId}`);
@@ -362,14 +367,14 @@ app.post('/save-user-data', async (req, res) => {
         if( userRole == "organization"){
             // const { displayName, phone, industry, experience, school, company, sosecGraduate } = req.body;
 
-            user.displayName = req.body.displayName;
-            user.phoneNumber = req.body.phonenumber;
-            user.address = req.body.address;
-            user.description = req.body.description;
-            user.school = req.body.school;
-            user.websiteURL = req.body.websiteURL;
-            user.industry = req.body.industry;
-            user.organizationType = req.body.organizationType;
+            user.displayName = req.body.organization.displayName;
+            user.phoneNumber = req.body.organization.phoneNumber;
+            user.address = req.body.organization.address;
+            user.description = req.body.organization.description;
+            user.school = req.body.organization.school;
+            user.websiteURL = req.body.organization.websiteURL;
+            user.industry = req.body.organization.industry;
+            user.organizationType = req.body.organization.organizationType;
             
             console.log ("I AM organisation ");
             await user.save();

@@ -146,6 +146,9 @@ passport.use(new GoogleStrategy({
         });
         await user.save();
     }
+    else{
+
+    }
    
 
     return done(null, user);
@@ -229,13 +232,20 @@ app.get('/dashboard', async (req, res) => {
     if (!user.role || user.role === '') {
         return res.redirect(`https://volunteerng.vercel.app/join?userId=${user.googleId}`);
     }
-    else if ( user.role == "volunteer"){
+    else if ( user.role == "volunteer"  && user.phone === ""){
         return res.redirect(`https://volunteerng.vercel.app/onboarding/volunteer?userId=${user.googleId}`);
     }
     
-    else if ( user.role == "organisation"){
+    else if ( user.role == "organization" && user.phone === ""){
         return res.redirect(`https://volunteerng.vercel.app/onboarding/org?userId=${user.googleId}`);
     }
+    else if ( user.role == "volunteer" && user.phone != ""){
+      return res.redirect(`https://volunteerng.vercel.app/project/volunteer`);
+  }
+
+  else if ( user.role == "organization" && user.phone != ""){
+    return res.redirect(`https://volunteerng.vercel.app/project/organization`);
+}
     // res.redirect(`https://volunteerng.vercel.app/join?userId=${userId}`);
 }
 catch (error) {

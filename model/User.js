@@ -11,7 +11,7 @@ const UserSchema = new Schema({
         type: [String]
     },
     
-    websiteURL: {
+    website: {
         type: String
     },
       school: {
@@ -59,10 +59,13 @@ const UserSchema = new Schema({
     startDate: {
         type: String
     },
-    endDate: {
+    sosec: {
         type: String
     },
-    sosecGraduate: {
+    socialMedia: {
+        type: String
+    },
+    endDate: {
         type: String
     },
     requirements: {

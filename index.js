@@ -353,13 +353,13 @@ app.post('/save-user-data', async (req, res) => {
             // const { displayName, phone, industry, experience, school, company, sosecGraduate } = req.body;
 
             user.displayName = req.body.volunteer.displayName;
-            user.phone = req.body.phone;
-            user.industry = req.body.industry;
-            user.experience = req.body.experience;
-            user.school = req.body.school;
-            user.company = req.body.company;
-            user.skills = req.body.skills;
-            user.sosecGraduate = req.body.sosecGraduate;
+            user.phone = req.body.volunteer.phone;
+            user.industry = req.body.volunteer.industry;
+            user.experience = req.body.volunteer.experience;
+            user.school = req.body.volunteer.school;
+            user.company = req.body.volunteer.company;
+            user.skills = req.body.volunteer.skills;
+            user.sosec = req.body.volunteer.sosec;
             
             console.log ("I AM HERE ");
             await user.save();
@@ -373,7 +373,8 @@ app.post('/save-user-data', async (req, res) => {
             user.address = req.body.organization.address;
             user.description = req.body.organization.description;
             user.school = req.body.organization.school;
-            user.websiteURL = req.body.organization.websiteURL;
+            user.website = req.body.organization.website;
+            user.socialMedia = req.body.organization.socialMedia;
             user.industry = req.body.organization.industry;
             user.organizationType = req.body.organization.organizationType;
             

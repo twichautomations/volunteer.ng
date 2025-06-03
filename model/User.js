@@ -83,6 +83,9 @@ const UserSchema = new Schema({
     email: {
         type: String
     },
+    projectsJoined: {
+        type: [String],
+    },
     image: {
         type: String
     },

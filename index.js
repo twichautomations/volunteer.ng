@@ -590,6 +590,36 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       res.status(500).json({ message: 'Server error while updating project' });
     }
   });
+
+  // POST /join-project
+app.post('/join-project', async (req, res) => {
+  
+  const userId = req.body.userId
+  const projectId = req.body.projectId
+
+  if (!userId || !projectId) {
+    return res.status(400).json({ message: 'userId and projectId are required.' });
+  }
+
+  try {
+  const user = await User.findOne({ googleId: userId });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Avoid duplicates
+    if (!user.projectsJoined.includes(projectId)) {
+      user.projectsJoined.push(projectId);
+      await user.save();
+    }
+
+    res.status(200).json({ message: 'Project joined successfully.', user });
+  } catch (error) {
+    console.error('Error joining project:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
   
 
 app.listen(3000, () => {

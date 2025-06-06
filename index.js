@@ -141,7 +141,6 @@ passport.use(new GoogleStrategy({
            experience : "",
            school : "",
            company : "",
-           sosecGraduate : "",
            displayName : "",
         });
         await user.save();
@@ -623,7 +622,7 @@ app.post('/join-project', async (req, res) => {
 
 
 
-app.get('/leave-project', async (req, res) => {
+app.post('/leave-project', async (req, res) => {
   
   const userId = req.body.userId
   const projectId = req.body.projectId

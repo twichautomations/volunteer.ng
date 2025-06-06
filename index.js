@@ -445,16 +445,26 @@ app.post('/save-project-data',  async (req, res) => {
 
 
 
-// GET all projects
+// GET all projects or filter by creatorId if userId is present in query
 app.get('/projects', async (req, res) => {
+  const userId = req.query.userId;
+
   try {
-    const projects = await Project.find(); // You can filter or paginate here
+    let projects;
+
+    if (userId) {
+      projects = await Project.find({ creatorId: userId });
+    } else {
+      projects = await Project.find();
+    }
+
     res.status(200).json(projects);
   } catch (error) {
     console.error('Error fetching projects:', error);
     res.status(500).json({ message: 'Server error while fetching projects' });
   }
 });
+
 
 app.delete('/delete-project/:userId/:projectId', async (req, res) => {
     const { userId, projectId } = req.params;
@@ -590,35 +600,60 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
     }
   });
 
-  // POST /join-project
-app.post('/join-project', async (req, res) => {
-
-  const userId = req.body.userId
-  const projectId = req.body.projectId
-
-  if (!userId || !projectId) {
-    return res.status(400).json({ message: 'userId and projectId are required.' });
-  }
-
-  try {
-  const user = await User.findOne({ googleId: userId });
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found.' });
+  app.post('/join-project', async (req, res) => {
+    const { userId, projectId } = req.body;
+  
+    if (!userId || !projectId) {
+      return res.status(400).json({ message: 'userId and projectId are required.' });
     }
-
-    // Avoid duplicates
-    if (!user.projectsJoined.includes(projectId)) {
-      user.projectsJoined.push(projectId);
-      await user.save();
+  
+    try {
+      const user = await User.findOne({ googleId: userId });
+      const project = await Project.findById(projectId);
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found.' });
+      }
+  
+      if (!project) {
+        return res.status(404).json({ message: 'Project not found.' });
+      }
+  
+      // Check if project is full
+      if (project.volunteersJoined.length >= 5) {
+        return res.status(403).json({ message: 'Volunteer limit reached for this project.' });
+      }
+  
+      // Add userId to project's volunteersJoined if not already included
+      if (!project.volunteersJoined.includes(userId)) {
+        project.volunteersJoined.push(userId);
+  
+        // If full after adding, set canApply to false
+        if (project.volunteersJoined.length >= 5) {
+          project.canApply = false;
+        }
+  
+        await project.save();
+      }
+  
+      // Add projectId to user's projectsJoined if not already included
+      if (!user.projectsJoined.includes(projectId)) {
+        user.projectsJoined.push(projectId);
+        await user.save();
+      }
+  
+      res.status(200).json({
+        message: 'User successfully joined the project.',
+        project,
+        user
+      });
+  
+    } catch (error) {
+      console.error('Error joining project:', error);
+      res.status(500).json({ message: 'Internal server error.' });
     }
-
-    res.status(200).json({ message: 'Project joined successfully.', user });
-  } catch (error) {
-    console.error('Error joining project:', error);
-    res.status(500).json({ message: 'Internal server error.' });
-  }
-});
+  });
+  
 
 
 

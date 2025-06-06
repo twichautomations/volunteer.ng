@@ -11,6 +11,12 @@ const ProjectSchema = new Schema({
     type: {
         type: String
     },
+    volunteersJoined: {
+        type: [String]
+    },
+    canApply{
+        type:Boolean
+    },
     duration: {
         type: String
     },

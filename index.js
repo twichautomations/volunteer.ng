@@ -424,6 +424,7 @@ app.post('/save-project-data',  async (req, res) => {
         project.contactPhone = req.body.contactPhone;
         project.maxVolunteers = req.body.maxVolunteers;
         project.tags = req.body.tags;
+        project.canApply = true;
         project.createdAt = req.body.createdAt;
 
         console.log("Saving project:", project);
@@ -620,7 +621,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       }
   
       // Check if project is full
-      if (project.volunteersJoined.length >= 5) {
+      if (project.volunteersJoined.length >= project.maxVolunteers) {
         return res.status(403).json({ message: 'Volunteer limit reached for this project.' });
       }
   
@@ -629,7 +630,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
         project.volunteersJoined.push(userId);
   
         // If full after adding, set canApply to false
-        if (project.volunteersJoined.length >= 5) {
+        if (project.volunteersJoined.length >= project.maxVolunteers) {
           project.canApply = false;
         }
   
@@ -659,13 +660,18 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
 
 app.post('/leave-project', async (req, res) => {
   
-  const userId = req.body.userId
-  const projectId = req.body.projectId
+  const userId = req.body.userId;
+  const projectId = req.body.projectId;
+
+  const project = await Project.findById(projectId);
+
 
   if (!userId || !projectId) {
     return res.status(400).json({ message: 'userId and projectId are required.' });
   }
-
+  if (!project) {
+    return res.status(404).json({ message: 'Project not found.' });
+  }
   try {
   const user = await User.findOne({ googleId: userId });
 
@@ -678,6 +684,18 @@ app.post('/leave-project', async (req, res) => {
       user.projectsJoined.pull(projectId);
       await user.save();
     }
+
+          // Add userId to project's volunteersJoined if not already included
+          if (project.volunteersJoined.includes(userId)) {
+            project.volunteersJoined.pull(userId);
+      
+            // If full after adding, set canApply to false
+            if (project.volunteersJoined.length < project.maxVolunteers) {
+              project.canApply = true;
+            }
+      
+            await project.save();
+          }
 
     res.status(200).json({ message: 'Project exited  successfully.', user });
   } catch (error) {

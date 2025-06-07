@@ -243,12 +243,12 @@ app.get('/dashboard', async (req, res) => {
     }
     else if ( user.role == "volunteer" && user.industry != ""){
       console.log("user has started registration and completed");
-      return res.redirect(`https://volunteerng.vercel.app/project/volunteer`);
+      return res.redirect(`https://volunteerng.vercel.app/project/volunteer?userId=${user.googleId}`);
   }
 
   else if ( user.role == "organization" && user.industry != ""){
     console.log("user has started registration and completed");
-    return res.redirect(`https://volunteerng.vercel.app/project/organization`);
+    return res.redirect(`https://volunteerng.vercel.app/project/organization?userId=${user.googleId}`);
 }
     // res.redirect(`https://volunteerng.vercel.app/join?userId=${userId}`);
 }

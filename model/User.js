@@ -24,7 +24,7 @@ const UserSchema = new Schema({
         type: String
     },
     industry: {
-        type: String
+        type: [String]
     },
     phone: {
         type: String

@@ -423,7 +423,7 @@ app.post('/save-project-data',  async (req, res) => {
         project.contactEmail = req.body.contactEmail;
         project.contactPhone = req.body.contactPhone;
         project.maxVolunteers = req.body.maxVolunteers;
-        project.skills = req.body.skills;
+        project.tags = req.body.tags;
         project.canApply = true;
         project.createdAt = req.body.createdAt;
 
@@ -450,7 +450,7 @@ app.get('/projects', async (req, res) => {
   try {
     const {
       cause,        // maps to project.category
-      skills,       // maps to project.skills
+      skills,       // maps to project.tags
       type,         // maps to project.type
       location,     // maps to project.location
       userId,       // maps to project.creatorId
@@ -582,7 +582,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       contactEmail,
       contactPhone,
       maxVolunteers,
-      skills
+      tags
     } = req.body;
   const userId = req.body.userId;
     try {
@@ -624,7 +624,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       project.contactEmail = contactEmail || project.contactEmail;
       project.contactPhone = contactPhone || project.contactPhone;
       project.maxVolunteers = maxVolunteers || project.maxVolunteers;
-      project.skills = skills || project.skills;
+      project.tags = tags || project.tags;
   
       await project.save();
   

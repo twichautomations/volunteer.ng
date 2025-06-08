@@ -490,6 +490,7 @@ app.get('/projects', async (req, res) => {
       .limit(limitNum);
 
     const total = await Project.countDocuments(query);
+    console.log(projects);
 
     res.status(200).json({
       total,

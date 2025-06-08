@@ -412,7 +412,7 @@ app.post('/save-project-data',  async (req, res) => {
         project.heading = req.body.heading;
         project.orgName = req.body.orgName;
         project.description = req.body.description;
-        project.category = req.body.category;
+        project.causes = req.body.causes;
         project.status = req.body.status;
         project.location = req.body.location;
         project.startDate = req.body.startDate;
@@ -423,7 +423,7 @@ app.post('/save-project-data',  async (req, res) => {
         project.contactEmail = req.body.contactEmail;
         project.contactPhone = req.body.contactPhone;
         project.maxVolunteers = req.body.maxVolunteers;
-        project.tags = req.body.tags;
+        project.skills = req.body.skills;
         project.canApply = true;
         project.createdAt = req.body.createdAt;
 
@@ -446,25 +446,63 @@ app.post('/save-project-data',  async (req, res) => {
 
 
 
-// GET all projects or filter by creatorId if userId is present in query
 app.get('/projects', async (req, res) => {
-  const userId = req.query.userId;
-
   try {
-    let projects;
+    const {
+      cause,        // maps to project.category
+      skills,       // maps to project.skills
+      type,         // maps to project.type
+      location,     // maps to project.location
+      userId,       // maps to project.creatorId
+      page = 1,
+      limit = 10
+    } = req.query;
+
+    // Create the MongoDB query object
+    const query = {};
 
     if (userId) {
-      projects = await Project.find({ creatorId: userId });
-    } else {
-      projects = await Project.find();
+      query.creatorId = userId;
     }
 
-    res.status(200).json(projects);
+    if (cause) {
+      query.cause = { $in: cause.split(',') };
+    }
+
+    if (skills) {
+      query.skills = { $in: skills.split(',') };
+    }
+
+    if (type) {
+      query.type = { $in: type.split(',') };
+    }
+
+    if (location) {
+      query.location = { $in: location.split(',') };
+    }
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const projects = await Project.find(query)
+      .skip(skip)
+      .limit(limitNum);
+
+    const total = await Project.countDocuments(query);
+
+    res.status(200).json({
+      total,
+      page: pageNum,
+      limit: limitNum,
+      projects
+    });
   } catch (error) {
     console.error('Error fetching projects:', error);
     res.status(500).json({ message: 'Server error while fetching projects' });
   }
 });
+
 
 
 app.delete('/delete-project/:userId/:projectId', async (req, res) => {
@@ -534,7 +572,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       heading,
       orgName,
       description,
-      category,
+      causes,
       status,
       location,
       startDate,
@@ -544,7 +582,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       contactEmail,
       contactPhone,
       maxVolunteers,
-      tags
+      skills
     } = req.body;
   const userId = req.body.userId;
     try {
@@ -575,7 +613,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       project.heading = heading || project.heading;
       project.orgName = orgName || project.orgName;
       project.description = description || project.description;
-      project.category = category || project.category;
+      project.causes = causes || project.causes;
       project.status = status || project.status;
       project.location = location || project.location;
       project.startDate = startDate || project.startDate;
@@ -586,7 +624,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       project.contactEmail = contactEmail || project.contactEmail;
       project.contactPhone = contactPhone || project.contactPhone;
       project.maxVolunteers = maxVolunteers || project.maxVolunteers;
-      project.tags = tags || project.tags;
+      project.skills = skills || project.skills;
   
       await project.save();
   

@@ -35,8 +35,8 @@ const ProjectSchema = new Schema({
     description: {
         type: String
     },
-    category: {
-        type: String
+    causes: {
+        type: [String]
     },
     status: {
         type: String,
@@ -63,6 +63,9 @@ const ProjectSchema = new Schema({
     benefits: {
         type: [String]
     },
+    skills: {
+        type: [String]
+    },
     contactEmail: {
         type: String
     },
@@ -71,9 +74,6 @@ const ProjectSchema = new Schema({
     },
     maxVolunteers: {
         type: Number
-    },
-    tags: {
-        type: [String]
     },
     createdAt: {
         type: String

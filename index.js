@@ -135,7 +135,7 @@ passport.use(new GoogleStrategy({
             displayName: profile.displayName,
             contactEmail: profile.emails[0].value,
             image: profile.photos[0].value,
-          
+          role: "",
            phone : "",
            industry : "",
            experience : "",
@@ -490,7 +490,7 @@ app.get('/projects', async (req, res) => {
       .limit(limitNum);
 
     const total = await Project.countDocuments(query);
-    console.log(projects);
+    
 
     res.status(200).json({
       total,
@@ -540,6 +540,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
   
   app.get('/project/:projectId', async (req, res) => {
     const { projectId } = req.params;
+    const userId = req.query.userId;
   
     try {
       // Validate projectId
@@ -548,17 +549,45 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       }
   
       const project = await Project.findById(projectId);
-  
       if (!project) {
         return res.status(404).json({ message: 'Project not found' });
       }
   
-      res.status(200).json(project);
+      // If no userId provided, just return the project
+      if (!userId) {
+        return res.status(200).json(project);
+      }
+  
+      // Fetch the requesting user
+      const user = await User.findOne({ googleId: userId });
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      // Check if user is the creator and an organization
+      const isCreator = project.creatorId === userId;
+      const isOrg = user.role === 'organization';
+  
+      if (isCreator && isOrg) {
+        // Convert volunteersJoined to ObjectIds
+        const volunteerIds = (project.volunteersJoined || []).map(id => new mongoose.Types.ObjectId(id));
+  
+        const volunteers = await User.find({
+          _id: { $in: volunteerIds }
+        });
+  
+        return res.status(200).json({ project, volunteers });
+      }
+  
+      // Default: user is not creator or not organization, just return project
+      return res.status(200).json(project);
+  
     } catch (err) {
       console.error('Error fetching project:', err);
-      res.status(500).json({ message: 'Server error while fetching project' });
+      return res.status(500).json({ message: 'Server error while fetching project' });
     }
   });
+  
 
 
   //edit or update a project
@@ -740,6 +769,39 @@ app.post('/leave-project', async (req, res) => {
   } catch (error) {
     console.error('Error exiting project:', error);
     res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
+app.get('/user-joined-projects', async (req, res) => {
+  const userId = req.query.userId;
+
+  if (!userId) {
+    return res.status(400).json({ message: "Missing userId in query" });
+  }
+
+  try {
+    // Find the user by Google ID
+    const user = await User.findOne({ googleId: userId });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const projectIds = user.projectsJoined || [];
+
+    if (projectIds.length === 0) {
+      return res.status(200).json({ projects: [] });
+    }
+
+    // Fetch projects where _id is in the user's projectsJoined array
+    const projects = await Project.find({
+      _id: { $in: projectIds.map(id => new mongoose.Types.ObjectId(id)) }
+    });
+
+    res.status(200).json({ projects });
+  } catch (error) {
+    console.error("Error fetching joined projects:", error);
+    res.status(500).json({ message: "Server error while fetching joined projects" });
   }
 });
   

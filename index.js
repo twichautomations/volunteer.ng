@@ -553,38 +553,23 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
         return res.status(404).json({ message: 'Project not found' });
       }
   
-      // If no userId provided, just return the project
-      if (!userId) {
-        return res.status(200).json(project);
-      }
+      // Default response
+      let responsePayload = { project };
   
-      // Fetch the requesting user
-      const user = await User.findOne({ googleId: userId });
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-  
-      // Check if user is the creator and an organization
-      const isCreator = project.creatorId === userId;
-      const isOrg = user.role === 'organization';
-  
-      if (isCreator && isOrg) {
-        // Convert volunteersJoined to ObjectIds
-        const volunteerIds = (project.volunteersJoined || []).map(id => new mongoose.Types.ObjectId(id));
-  
+      // If requester is the creator, attach volunteer info
+      if (userId && project.creatorId === userId && project.volunteersJoined?.length > 0) {
         const volunteers = await User.find({
-          _id: { $in: volunteerIds }
+          googleId: { $in: project.volunteersJoined },
         });
   
-        return res.status(200).json({ project, volunteers });
+        responsePayload.volunteers = volunteers;
       }
   
-      // Default: user is not creator or not organization, just return project
-      return res.status(200).json(project);
+      res.status(200).json(responsePayload);
   
     } catch (err) {
       console.error('Error fetching project:', err);
-      return res.status(500).json({ message: 'Server error while fetching project' });
+      res.status(500).json({ message: 'Server error while fetching project' });
     }
   });
   

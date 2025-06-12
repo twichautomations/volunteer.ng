@@ -537,7 +537,6 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       res.status(500).json({ message: 'Server error' });
     }
   });
-  
   app.get('/project/:projectId', async (req, res) => {
     const { projectId } = req.params;
     const userId = req.query.userId;
@@ -556,11 +555,18 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       // Default response
       let responsePayload = { project };
   
-      // If requester is the creator, attach volunteer info
-      if (userId && project.creatorId === userId && project.volunteersJoined?.length > 0) {
-        const volunteers = await User.find({
-          googleId: { $in: project.volunteersJoined },
-        });
+      // Check if the requester is the creator and if volunteersJoined exists
+      if (
+        userId &&
+        project.creatorId === userId &&
+        Array.isArray(project.volunteersJoined) &&
+        project.volunteersJoined.length > 0
+      ) {
+        // Extract userIds from volunteersJoined array
+        const userIds = project.volunteersJoined.map(entry => entry.userId);
+  
+        // Fetch full user details
+        const volunteers = await User.find({ googleId: { $in: userIds } });
   
         responsePayload.volunteers = volunteers;
       }
@@ -655,7 +661,9 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
   });
 
   app.post('/join-project', async (req, res) => {
-    const { userId, projectId } = req.body;
+    const {
+      userId,projectId,name,email,phone,qualifications,experience,skills,availability,message
+    } = req.body;
   
     if (!userId || !projectId) {
       return res.status(400).json({ message: 'userId and projectId are required.' });
@@ -673,16 +681,32 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
         return res.status(404).json({ message: 'Project not found.' });
       }
   
-      // Check if project is full
+      // Check if the project is full
       if (project.volunteersJoined.length >= project.maxVolunteers) {
         return res.status(403).json({ message: 'Volunteer limit reached for this project.' });
       }
   
-      // Add userId to project's volunteersJoined if not already included
-      if (!project.volunteersJoined.includes(userId)) {
-        project.volunteersJoined.push(userId);
+      // Check if user already joined
+      const alreadyJoined = project.volunteersJoined.some(
+        (entry) => entry.userId === userId
+      );
   
-        // If full after adding, set canApply to false
+      if (!alreadyJoined) {
+        // Push structured form data into volunteersJoined
+        project.volunteersJoined.push({
+          userId,
+          name,
+          email,
+          phone,
+          project: projectId,
+          qualifications,
+          experience,
+          skills,
+          availability,
+          message
+        });
+  
+        // If project now full, mark as canApply = false
         if (project.volunteersJoined.length >= project.maxVolunteers) {
           project.canApply = false;
         }
@@ -690,9 +714,17 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
         await project.save();
       }
   
-      // Add projectId to user's projectsJoined if not already included
-      if (!user.projectsJoined.includes(projectId)) {
-        user.projectsJoined.push(projectId);
+   // Check if user already joined the project
+      const alreadyJoinedProject = user.projectsJoined.some(
+        (entry) => entry.projectId.toString() === projectId
+      );
+
+      if (!alreadyJoinedProject) {
+        user.projectsJoined.push({
+          projectId,
+          status: 'pending' // default
+        });
+
         await user.save();
       }
   
@@ -708,87 +740,97 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
     }
   });
   
-
-
-
-app.post('/leave-project', async (req, res) => {
   
-  const userId = req.body.userId;
-  const projectId = req.body.projectId;
-
-  const project = await Project.findById(projectId);
 
 
-  if (!userId || !projectId) {
-    return res.status(400).json({ message: 'userId and projectId are required.' });
-  }
-  if (!project) {
-    return res.status(404).json({ message: 'Project not found.' });
-  }
-  try {
-  const user = await User.findOne({ googleId: userId });
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found.' });
+  app.post('/leave-project', async (req, res) => {
+    const { userId, projectId } = req.body;
+  
+    if (!userId || !projectId) {
+      return res.status(400).json({ message: 'userId and projectId are required.' });
     }
-
-    // Avoid duplicates
-    if (user.projectsJoined.includes(projectId)) {
-      user.projectsJoined.pull(projectId);
-      await user.save();
+  
+    try {
+      const project = await Project.findById(projectId);
+      if (!project) {
+        return res.status(404).json({ message: 'Project not found.' });
+      }
+  
+      const user = await User.findOne({ googleId: userId });
+      if (!user) {
+        return res.status(404).json({ message: 'User not found.' });
+      }
+  
+      // Remove user from project's volunteersJoined array
+      const initialLength = project.volunteersJoined.length;
+      project.volunteersJoined = project.volunteersJoined.filter(
+        entry => entry.userId !== userId
+      );
+  
+      // If the user was actually removed and the project is no longer full
+      if (project.volunteersJoined.length < project.maxVolunteers) {
+        project.canApply = true;
+      }
+  
+      if (project.volunteersJoined.length !== initialLength) {
+        await project.save();
+      }
+  
+      // Remove project from user's projectsJoined array
+      const beforeUserProjects = user.projectsJoined.length;
+      user.projectsJoined = user.projectsJoined.filter(
+        entry => entry.projectId !== projectId
+      );
+  
+      if (user.projectsJoined.length !== beforeUserProjects) {
+        await user.save();
+      }
+  
+      res.status(200).json({ message: 'Project exited successfully.', user });
+    } catch (error) {
+      console.error('Error exiting project:', error);
+      res.status(500).json({ message: 'Internal server error.' });
     }
+  });
+  
 
-          // Add userId to project's volunteersJoined if not already included
-          if (project.volunteersJoined.includes(userId)) {
-            project.volunteersJoined.pull(userId);
-      
-            // If full after adding, set canApply to false
-            if (project.volunteersJoined.length < project.maxVolunteers) {
-              project.canApply = true;
-            }
-      
-            await project.save();
-          }
-
-    res.status(200).json({ message: 'Project exited  successfully.', user });
-  } catch (error) {
-    console.error('Error exiting project:', error);
-    res.status(500).json({ message: 'Internal server error.' });
-  }
-});
-
-app.get('/user-joined-projects', async (req, res) => {
-  const userId = req.query.userId;
-
-  if (!userId) {
-    return res.status(400).json({ message: "Missing userId in query" });
-  }
-
-  try {
-    // Find the user by Google ID
-    const user = await User.findOne({ googleId: userId });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+  app.get('/user-joined-projects', async (req, res) => {
+    const userId = req.query.userId;
+  
+    if (!userId) {
+      return res.status(400).json({ message: "Missing userId in query" });
     }
-
-    const projectIds = user.projectsJoined || [];
-
-    if (projectIds.length === 0) {
-      return res.status(200).json({ projects: [] });
+  
+    try {
+      // Find the user by Google ID
+      const user = await User.findOne({ googleId: userId });
+  
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      const joinedProjects = user.projectsJoined || [];
+  
+      if (joinedProjects.length === 0) {
+        return res.status(200).json({ projects: [] });
+      }
+  
+      // Extract only the projectIds from the array of objects
+      const projectIds = joinedProjects.map(entry =>
+        new mongoose.Types.ObjectId(entry.projectId)
+      );
+  
+      // Fetch projects where _id is in the user's projectsJoined array
+      const projects = await Project.find({ _id: { $in: projectIds } });
+  
+      res.status(200).json({ projects });
+    } catch (error) {
+      console.error("Error fetching joined projects:", error);
+      res.status(500).json({ message: "Server error while fetching joined projects" });
     }
-
-    // Fetch projects where _id is in the user's projectsJoined array
-    const projects = await Project.find({
-      _id: { $in: projectIds.map(id => new mongoose.Types.ObjectId(id)) }
-    });
-
-    res.status(200).json({ projects });
-  } catch (error) {
-    console.error("Error fetching joined projects:", error);
-    res.status(500).json({ message: "Server error while fetching joined projects" });
-  }
-});
+  });
+  
   
 
 app.listen(3000, () => {

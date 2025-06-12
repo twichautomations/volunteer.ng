@@ -83,9 +83,18 @@ const UserSchema = new Schema({
     email: {
         type: String
     },
-    projectsJoined: {
-        type: [String],
-    },
+    projectsJoined: [
+        {
+          projectId: {
+            type: String, // not ObjectId
+            required: true
+          },
+          status: {
+            type: String,
+            default: 'pending'
+          }
+        }
+      ],
     image: {
         type: String
     },

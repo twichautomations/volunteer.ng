@@ -11,9 +11,20 @@ const ProjectSchema = new Schema({
     type: {
         type: String
     },
-    volunteersJoined: {
-        type: [String]
-    },
+    volunteersJoined: [
+        {
+          userId: { type: String, required: true }, // store as string if you're using googleId or ObjectId as string
+          name: String,
+          email: String,
+          phone: String,
+          project: String, // projectId
+          qualifications: String,
+          experience: String,
+          skills: String,
+          availability: String,
+          message: String
+        }
+      ],
     canApply:{
         type:Boolean
     },

@@ -43,7 +43,7 @@ const ProjectSchema = new Schema({
         enum: ["applied", "ongoing", "completed", "rejected"]
     },
     location: {
-        type: String
+        type: [String]
     },
     duration: {
         type: String

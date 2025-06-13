@@ -239,25 +239,25 @@ app.get('/dashboard', async (req, res) => {
 
     if (!user.role || user.role === '') {
       console.log("User has not registred at all");
-        return res.redirect(`https://volunteerng.vercel.app/join?userId=${user.googleId}`);
+        return res.redirect('https://volunteerng.vercel.app/join');
     }
     else if ( user.role == "volunteer"  && user.phone === ""){
       console.log("user has started registration but not completed");
-        return res.redirect(`https://volunteerng.vercel.app/onboarding/volunteer?userId=${user.googleId}`);
+        return res.redirect('https://volunteerng.vercel.app/onboarding/volunteer');
     }
     
     else if ( user.role == "organization" && user.industry === ""){
       console.log("user has started registration but not completed");
-        return res.redirect(`https://volunteerng.vercel.app/onboarding/org?userId=${user.googleId}`);
+        return res.redirect('https://volunteerng.vercel.app/onboarding/org');
     }
     else if ( user.role == "volunteer" && user.industry != ""){
       console.log("user has started registration and completed");
-      return res.redirect(`https://volunteerng.vercel.app/project/volunteer?userId=${user.googleId}`);
+      return res.redirect('https://volunteerng.vercel.app/project/volunteer');
   }
 
   else if ( user.role == "organization" && user.industry != ""){
     console.log("user has started registration and completed");
-    return res.redirect(`https://volunteerng.vercel.app/project/organization?userId=${user.googleId}`);
+    return res.redirect('https://volunteerng.vercel.app/project/organization');
 }
     // res.redirect(`https://volunteerng.vercel.app/join?userId=${userId}`);
 }

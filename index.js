@@ -260,7 +260,7 @@ app.get('/user', async (req, res) => {
 
         const userId = req.headers['userid']; // GET requests usually don't use body
         // const userId = req.query.userId; // better practice: use query params for GET
-        console.log(req.user);
+        console.log('req.user from session:', req.user);
 
         if (!userId) {
             return res.status(400).json({ error: 'Missing userId in request' });
@@ -437,6 +437,8 @@ app.post('/save-project-data',  async (req, res) => {
 
 
 app.get('/projects', async (req, res) => {
+
+  console.log('req.user from session:', req.user);
   try {
     const {
       cause,        // maps to project.category

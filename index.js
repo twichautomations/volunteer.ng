@@ -10,6 +10,7 @@ const User = require('./model/User');
 const Project = require('./model/Project');
 const path = require('path');
 const MongoStore = require('connect-mongo');
+const cookieParser = require('cookie-parser');
 
 
 
@@ -73,7 +74,7 @@ app.use(express.json());
 
 
   
-
+app.use(cookieParser()); // ← Add this
 app.use(session({
   secret: process.env.SESSION_SECRET, // Replace with your own secret
   resave: false,

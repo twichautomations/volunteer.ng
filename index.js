@@ -172,14 +172,16 @@ app.get('/auth/google',
 );
 
 // Google Callback Route
-app.get("/auth/google_callback",
-    passport.authenticate('google', { failureRedirect: '/' }),
-    (req, res) => {
-        req.session.save(() => {
-            res.redirect('/dashboard');
-        });
-    }
+app.get('/auth/google_callback',
+  passport.authenticate('google', { failureRedirect: '/', session: true }),
+  (req, res) => {
+    console.log("Authenticated user:", req.user); // This should be defined
+    req.session.save(() => {
+      res.redirect('/dashboard');
+    });
+  }
 );
+
 
 
 // Logout Route

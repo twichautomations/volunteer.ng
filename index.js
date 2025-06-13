@@ -11,6 +11,9 @@ const Project = require('./model/Project');
 const path = require('path');
 const MongoStore = require('connect-mongo');
 const cookieParser = require('cookie-parser');
+const cloudinary = require('cloudinary').v2;
+const multer = require('multer');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 
 
@@ -70,7 +73,22 @@ app.use(bodyParser.urlencoded({
 app.use(express.json()); 
 
 
-  
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'project_uploads', // optional folder in Cloudinary
+    allowed_formats: ['jpg', 'png', 'jpeg', 'webp']
+  }
+});
+
 
 
   
@@ -298,7 +316,8 @@ app.get('/user', async (req, res) => {
 
 app.post('/save-user-type', async (req, res) => {
     try {
-        const { userId, role } = req.body;
+      const userId = req.user.googleId;
+        const  role = req.body.role;
 
         if (!userId || !role) {
             return res.status(400).json({ message: "Missing userId or role in request body" });
@@ -324,8 +343,8 @@ app.post('/save-user-type', async (req, res) => {
 
 app.post('/save-user-data', async (req, res) => {
     try {
-        // const { userId } = req.body;
-        const userId = req.body.userId;
+
+        const userId = req.user.googleId;
 
         if (!userId) {
             return res.status(400).json({ message: "Missing userId in request body" });
@@ -442,13 +461,13 @@ app.post('/save-project-data',  async (req, res) => {
 app.get('/projects', async (req, res) => {
 
   console.log('req.user from session:', req.user);
+  const userId = req.user.googleId;
   try {
     const {
       cause,        // maps to project.category
       skills,       // maps to project.tags
       type,         // maps to project.type
-      location,     // maps to project.location
-      userId,       // maps to project.creatorId
+      location,     // maps to project.location       // maps to project.creatorId
       page = 1,
       limit = 10
     } = req.query;
@@ -534,7 +553,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
   });
   app.get('/project/:projectId', async (req, res) => {
     const { projectId } = req.params;
-    const userId = req.query.userId;
+    const userId = req.user.googleId;
   
     try {
       // Validate projectId
@@ -600,7 +619,8 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       maxVolunteers,
       tags
     } = req.body;
-  const userId = req.body.userId;
+
+  const userId = req.user.googleId;
     try {
       if (!mongoose.Types.ObjectId.isValid(projectId)) {
         return res.status(400).json({ message: 'Invalid project ID format' });
@@ -657,8 +677,10 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
 
   app.post('/join-project', async (req, res) => {
     const {
-      userId,projectId,name,email,phone,qualifications,experience,skills,availability,message
+      projectId,name,email,phone,qualifications,experience,skills,availability,message
     } = req.body;
+
+    const userId = req.user.googleId;
   
     if (!userId || !projectId) {
       return res.status(400).json({ message: 'userId and projectId are required.' });
@@ -740,7 +762,8 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
 
 
   app.post('/leave-project', async (req, res) => {
-    const { userId, projectId } = req.body;
+    const { projectId } = req.body;
+    const userId = req.user.googleId;
   
     if (!userId || !projectId) {
       return res.status(400).json({ message: 'userId and projectId are required.' });
@@ -791,7 +814,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
   
 
   app.get('/user-joined-projects', async (req, res) => {
-    const userId = req.query.userId;
+    const userId = req.user.googleId;
   
     if (!userId) {
       return res.status(400).json({ message: "Missing userId in query" });

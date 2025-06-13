@@ -10,9 +10,7 @@ const User = require('./model/User');
 const Project = require('./model/Project');
 const path = require('path');
 const MongoStore = require('connect-mongo');
-const cloudinary = require('cloudinary').v2;
-const multer = require('multer');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
 
 
 
@@ -70,23 +68,10 @@ app.use(bodyParser.urlencoded({
 
 app.use(express.json()); 
 
-// Configure Cloudinary
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
-  });
+
   
 
-const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-      folder: 'project_uploads', // optional folder in Cloudinary
-      allowed_formats: ['jpg', 'png', 'jpeg', 'webp']
-    }
-  });
-  
-  const upload = multer({ storage });
+
   
 
 app.use(session({
@@ -101,7 +86,9 @@ app.use(session({
   cookie: {
     maxAge: 14 * 24 * 60 * 60 * 1000, // Cookie expiration time in milliseconds (14 days)
     secure: process.env.NODE_ENV === 'production', // Set to true if using HTTPS
-    httpOnly: true
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+
   }
 }));
 
@@ -225,6 +212,7 @@ app.get('/dashboard', async (req, res) => {
         return res.status(401).send('Unauthorized');
     }
     const userId = req.user.googleId;
+    console.log(req.user);
 
     let user = await User.findOne({ googleId:userId});
 
@@ -269,9 +257,10 @@ catch (error) {
 
 app.get('/user', async (req, res) => {
     try {
+
         const userId = req.headers['userid']; // GET requests usually don't use body
         // const userId = req.query.userId; // better practice: use query params for GET
-        console.log(req.headers);
+        console.log(req.user);
 
         if (!userId) {
             return res.status(400).json({ error: 'Missing userId in request' });
@@ -401,6 +390,7 @@ app.post('/save-project-data',  async (req, res) => {
         // if (!req.body.heading || !req.body.orgName || !req.body.status) {
         //     return res.status(400).json({ message: "Missing required fields: heading, orgName, or status" });
         // }
+        console.log(req.user);
 
         const project = new Project();
 

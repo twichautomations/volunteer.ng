@@ -817,7 +817,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
     const userId = req.user.googleId;
   
     if (!userId) {
-      return res.status(400).json({ message: "Missing userId in query" });
+      return res.status(400).json({ message: "Missing userId in request" });
     }
   
     try {
@@ -846,6 +846,38 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
     } catch (error) {
       console.error("Error fetching joined projects:", error);
       res.status(500).json({ message: "Server error while fetching joined projects" });
+    }
+  });
+  
+
+  app.post('/volunteer-details', async (req, res) => {
+    const { googleId, projectId } = req.body;
+  
+    if (!googleId || !projectId) {
+      return res.status(400).json({ message: 'googleId and projectId are required.' });
+    }
+  
+    try {
+      const project = await Project.findById(projectId);
+  
+      if (!project) {
+        return res.status(404).json({ message: 'Project not found.' });
+      }
+  
+      // Search volunteersJoined array for an object with matching userId
+      const volunteerDetails = project.volunteersJoined.find(
+        (volunteer) => volunteer.userId === googleId
+      );
+  
+      if (!volunteerDetails) {
+        return res.status(404).json({ message: 'Volunteer not found in this project.' });
+      }
+  
+      res.status(200).json({ volunteer: volunteerDetails });
+  
+    } catch (error) {
+      console.error('Error fetching volunteer details:', error);
+      res.status(500).json({ message: 'Internal server error.' });
     }
   });
   

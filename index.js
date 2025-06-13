@@ -48,7 +48,7 @@ db.once('open', () => {
 const app = express();
 
 app.use(cors({
-    origin: true, // Allow all origins dynamically
+    origin:'https://volunteerng.vercel.app', // not `true` anymore // Allow all origins dynamically
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization", 'userId']
@@ -214,7 +214,7 @@ app.get('/dashboard', async (req, res) => {
         return res.status(401).send('Unauthorized');
     }
     const userId = req.user.googleId;
-    console.log(req.user);
+    console.log('User from dashboard session:', req.user);
 
     let user = await User.findOne({ googleId:userId});
 

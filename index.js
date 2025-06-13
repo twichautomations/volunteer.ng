@@ -52,7 +52,7 @@ db.once('open', () => {
 const app = express();
 
 app.use(cors({
-    origin:'https://volunteerng.vercel.app', // not `true` anymore // Allow all origins dynamically
+    origin:['https://volunteerng.vercel.app', 'http://localhost:3000'], // not `true` anymore // Allow all origins dynamically
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization", 'userId']

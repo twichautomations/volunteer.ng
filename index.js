@@ -464,6 +464,7 @@ app.get('/projects', async (req, res) => {
   
   try {
     // const userId = req.user.googleId;
+    const userId = req.user ? req.user.googleId : null;
     const {
       cause,        // maps to project.category
       skills,       // maps to project.tags
@@ -476,9 +477,9 @@ app.get('/projects', async (req, res) => {
     // Create the MongoDB query object
     const query = {};
 
-    // if (userId) {
-    //   query.creatorId = userId;
-    // }
+    if (userId) {
+      query.creatorId = userId;
+    }
 
     if (cause) {
       query.cause = { $in: cause.split(',') };

@@ -461,8 +461,9 @@ app.post('/save-project-data',  async (req, res) => {
 app.get('/projects', async (req, res) => {
 
   console.log('req.user from session:', req.user);
-  const userId = req.user.googleId;
+  
   try {
+    // const userId = req.user.googleId;
     const {
       cause,        // maps to project.category
       skills,       // maps to project.tags
@@ -475,9 +476,9 @@ app.get('/projects', async (req, res) => {
     // Create the MongoDB query object
     const query = {};
 
-    if (userId) {
-      query.creatorId = userId;
-    }
+    // if (userId) {
+    //   query.creatorId = userId;
+    // }
 
     if (cause) {
       query.cause = { $in: cause.split(',') };
@@ -604,9 +605,6 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       res.status(500).json({ message: 'Server error while fetching project' });
     }
   });
-  
-  
-
   
 
 

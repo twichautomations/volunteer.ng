@@ -551,9 +551,10 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       res.status(500).json({ message: 'Server error' });
     }
   });
+
   app.get('/project/:projectId', async (req, res) => {
     const { projectId } = req.params;
-    const userId = req.user.googleId;
+    const userId = req.user?.googleId;
   
     try {
       // Validate projectId
@@ -569,20 +570,31 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       // Default response
       let responsePayload = { project };
   
-      // Check if the requester is the creator and if volunteersJoined exists
-      if (
-        userId &&
-        project.creatorId === userId &&
-        Array.isArray(project.volunteersJoined) &&
-        project.volunteersJoined.length > 0
-      ) {
-        // Extract userIds from volunteersJoined array
-        const userIds = project.volunteersJoined.map(entry => entry.userId);
+   if (!userId) {
+  return res.status(200).json({ project, canApply: true });
+}
+
   
-        // Fetch full user details
-        const volunteers = await User.find({ googleId: { $in: userIds } });
+      // Fetch the current user
+      const user = await User.findOne({ googleId: userId });
   
-        responsePayload.volunteers = volunteers;
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      // If requester is the creator, attach volunteer details
+      if (project.creatorId === userId) {
+        if (Array.isArray(project.volunteersJoined) && project.volunteersJoined.length > 0) {
+          const userIds = project.volunteersJoined.map(entry => entry.userId);
+          const volunteers = await User.find({ googleId: { $in: userIds } });
+          responsePayload.volunteers = volunteers;
+        }
+      } 
+      // If requester is a volunteer, determine canApply
+      else if (user.role === 'volunteer') {
+        const hasJoined = user.projectsJoined.some(p => p.projectId === projectId);
+        const canApply = !hasJoined;
+        responsePayload.canApply = canApply;
       }
   
       res.status(200).json(responsePayload);
@@ -592,6 +604,8 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       res.status(500).json({ message: 'Server error while fetching project' });
     }
   });
+  
+  
   
 
 

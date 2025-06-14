@@ -89,6 +89,7 @@ const UserSchema = new Schema({
             type: String, // not ObjectId
             required: true
           },
+        
           status: {
             type: String,
             default: 'pending'

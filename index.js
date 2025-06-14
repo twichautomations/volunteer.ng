@@ -606,6 +606,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
   });
   
   
+
   
 
 
@@ -894,6 +895,45 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       res.status(500).json({ message: 'Internal server error.' });
     }
   });
+
+  app.post('/update-project-status', async (req, res) => {
+    const { volunteerId, projectId, status } = req.body;
+  
+    if (!volunteerId || !projectId || !status) {
+      return res.status(400).json({ message: 'volunteerId, projectId, and status are required.' });
+    }
+  
+    try {
+      const user = await User.findOne({ googleId: volunteerId });
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found.' });
+      }
+  
+      // Find the project entry in the user's projectsJoined array
+      const projectEntry = user.projectsJoined.find(
+        (entry) => entry.projectId === projectId
+      );
+  
+      if (!projectEntry) {
+        return res.status(404).json({ message: 'Project not found in user\'s joined projects.' });
+      }
+  
+      // Update the status
+      projectEntry.status = status;
+  
+      await user.save();
+  
+      res.status(200).json({
+        message: 'Project status updated successfully.',
+        updatedProject: projectEntry
+      });
+    } catch (error) {
+      console.error('Error updating project status:', error);
+      res.status(500).json({ message: 'Internal server error.' });
+    }
+  });
+  
   
   
 

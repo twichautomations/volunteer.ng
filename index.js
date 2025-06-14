@@ -232,7 +232,8 @@ app.get('/dashboard', async (req, res) => {
     if (!req.isAuthenticated()) {
         return res.status(401).send('Unauthorized');
     }
-    const userId = req.user.googleId;
+    const userId = req.user ? req.user.googleId : null;
+
     console.log('User from dashboard session:', req.user);
 
     let user = await User.findOne({ googleId:userId});
@@ -279,7 +280,7 @@ catch (error) {
 app.get('/user', async (req, res) => {
     try {
 
-        const userId = req.user.googleId; // GET requests usually don't use body
+      const userId = req.user ? req.user.googleId : null; // GET requests usually don't use body
         // const userId = req.query.userId; // better practice: use query params for GET
         console.log('req.user from session:', req.user);
 
@@ -316,7 +317,7 @@ app.get('/user', async (req, res) => {
 
 app.post('/save-user-type', async (req, res) => {
     try {
-      const userId = req.user.googleId;
+      const userId = req.user ? req.user.googleId : null;
         const  role = req.body.role;
 
         if (!userId || !role) {
@@ -344,7 +345,7 @@ app.post('/save-user-type', async (req, res) => {
 app.post('/save-user-data', async (req, res) => {
     try {
 
-        const userId = req.user.googleId;
+      const userId = req.user ? req.user.googleId : null;
 
         if (!userId) {
             return res.status(400).json({ message: "Missing userId in request body" });
@@ -612,6 +613,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
   //edit or update a project
 
   app.put('/update-project/:projectId', async (req, res) => {
+    try{
     const { projectId } = req.params;
     const {
       
@@ -634,8 +636,8 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       tags
     } = req.body;
 
-  const userId = req.user.googleId;
-    try {
+    const userId = req.user ? req.user.googleId : null;
+    
       if (!mongoose.Types.ObjectId.isValid(projectId)) {
         return res.status(400).json({ message: 'Invalid project ID format' });
       }
@@ -694,7 +696,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       projectId,name,email,phone,qualifications,experience,skills,availability,message
     } = req.body;
 
-    const userId = req.user.googleId;
+    const userId = req.user ? req.user.googleId : null;
   
     if (!userId || !projectId) {
       return res.status(400).json({ message: 'userId and projectId are required.' });
@@ -777,7 +779,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
 
   app.post('/leave-project', async (req, res) => {
     const { projectId } = req.body;
-    const userId = req.user.googleId;
+    const userId = req.user ? req.user.googleId : null;
   
     if (!userId || !projectId) {
       return res.status(400).json({ message: 'userId and projectId are required.' });
@@ -828,7 +830,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
   
 
   app.get('/user-joined-projects', async (req, res) => {
-    const userId = req.user.googleId;
+    const userId = req.user ? req.user.googleId : null;
   
     if (!userId) {
       return res.status(400).json({ message: "Missing userId in request" });

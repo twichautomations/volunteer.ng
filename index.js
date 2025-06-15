@@ -574,7 +574,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       let responsePayload = { project };
   
    if (!userId) {
-  return res.status(200).json({ project, canApply: true });
+  return res.status(200).json({ project, hasJoinedProject: true });
 }
 
   
@@ -596,8 +596,8 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       // If requester is a volunteer, determine canApply
       else if (user.role === 'volunteer') {
         const hasJoined = user.projectsJoined.some(p => p.projectId === projectId);
-        const canApply = !hasJoined;
-        responsePayload.canApply = canApply;
+        const hasJoinedProject = !hasJoined;
+        responsePayload.hasJoinedProject = hasJoinedProject;
       }
   
       res.status(200).json(responsePayload);

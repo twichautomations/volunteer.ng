@@ -909,11 +909,11 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
   
     try {
 
-      if (!mongoose.Types.ObjectId.isValid(id)) {
+      if (!mongoose.Types.ObjectId.isValid(volunteerId)) {
         return res.status(400).json({ message: 'Invalid ID format' });
       }
       
-      const user = await User.findById(id);
+      const user = await User.findById(volunteerId);
       // const user = await User.findOne({ googleId: volunteerId });
   
       if (!user) {

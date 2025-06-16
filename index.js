@@ -594,7 +594,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       // If requester is a volunteer, determine canApply
       else if (user.role === 'volunteer') {
         const hasJoined = user.projectsJoined.some(p => p.projectId === projectId);
-        const hasJoinedProject = !hasJoined;
+        const hasJoinedProject = hasJoined;
         responsePayload.hasJoinedProject = hasJoinedProject;
       }
   

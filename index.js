@@ -636,12 +636,11 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
 
     const userId = req.user ? req.user.googleId : null;
     
-      // if (!mongoose.Types.ObjectId.isValid(projectId)) {
-      //   return res.status(400).json({ message: 'Invalid project ID format' });
-      // }
+      if (!mongoose.Types.ObjectId.isValid(projectId)) {
+        return res.status(400).json({ message: 'Invalid project ID format' });
+      }
   
-       // You can now safely use projectId
-      const project = await Project.findOne({ _id: projectId });
+      const project = await Project.findById(projectId);
       if (!project) {
         return res.status(404).json({ message: 'Project not found' });
       }
@@ -897,7 +896,10 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
   });
 
   app.post('/update-project-status', async (req, res) => {
-    const { volunteerId, projectId, status } = req.body;
+    // const { volunteerId, projectId, status } = req.body;
+    const volunteerId = req.body.req.volunteerId;
+    const projectId = req.body.req.projectId;
+    const status = req.body.req.status;
   
     if (!volunteerId || !projectId || !status) {
       return res.status(400).json({ message: 'volunteerId, projectId, and status are required.' });

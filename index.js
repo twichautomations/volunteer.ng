@@ -908,7 +908,13 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
     }
   
     try {
-      const user = await User.findOne({ googleId: volunteerId });
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: 'Invalid ID format' });
+      }
+      
+      const user = await User.findById(id);
+      // const user = await User.findOne({ googleId: volunteerId });
   
       if (!user) {
         return res.status(404).json({ message: 'User not found.' });

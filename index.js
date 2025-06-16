@@ -345,6 +345,8 @@ app.post('/save-user-type', async (req, res) => {
 app.post('/save-user-data', async (req, res) => {
     try {
 
+
+      const userId = req.user ? req.user.googleId : null;
     
 
         // Find user by Google ID

@@ -897,9 +897,9 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
 
   app.post('/update-project-status', async (req, res) => {
     // const { volunteerId, projectId, status } = req.body;
-    const volunteerId = req.body.req.volunteerId;
-    const projectId = req.body.req.projectId;
-    const status = req.body.req.status;
+    const volunteerId = req.body.volunteerId;
+    const projectId = req.body.projectId;
+    const status = req.body.volunteerId;
   
     if (!volunteerId || !projectId || !status) {
       return res.status(400).json({ message: 'volunteerId, projectId, and status are required.' });

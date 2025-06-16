@@ -636,11 +636,12 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
 
     const userId = req.user ? req.user.googleId : null;
     
-      if (!mongoose.Types.ObjectId.isValid(projectId)) {
-        return res.status(400).json({ message: 'Invalid project ID format' });
-      }
+      // if (!mongoose.Types.ObjectId.isValid(projectId)) {
+      //   return res.status(400).json({ message: 'Invalid project ID format' });
+      // }
   
-      const project = await Project.findById(projectId);
+       // You can now safely use projectId
+      const project = await Project.findOne({ _id: projectId });
       if (!project) {
         return res.status(404).json({ message: 'Project not found' });
       }

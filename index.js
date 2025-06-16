@@ -345,11 +345,7 @@ app.post('/save-user-type', async (req, res) => {
 app.post('/save-user-data', async (req, res) => {
     try {
 
-      const userId = req.user ? req.user.googleId : null;
-
-        if (!userId) {
-            return res.status(400).json({ message: "Missing userId in request body" });
-        }
+    
 
         // Find user by Google ID
         const user = await User.findOne({ googleId: userId });
@@ -574,7 +570,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       let responsePayload = { project };
   
    if (!userId) {
-  return res.status(200).json({ project, hasJoinedProject: true });
+  return res.status(200).json({ project, hasJoinedProject: false });
 }
 
   

@@ -92,7 +92,7 @@ const UserSchema = new Schema({
         
           status: {
             type: String,
-            default: 'pending'
+            default: 'applied'
           }
         }
       ],

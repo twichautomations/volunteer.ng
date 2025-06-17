@@ -51,7 +51,7 @@ const ProjectSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ["published", "ongoing", "completed"]
+        // enum: ["published", "ongoing", "completed"]
     },
     location: {
         type: [String]

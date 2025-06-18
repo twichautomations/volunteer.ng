@@ -878,9 +878,9 @@ app.delete('/delete-project/:projectId', async (req, res) => {
   
       // Fetch full project documents
       const projects = await Project.find({
-        _id: { $in: projectIds.map(id => new mongoose.Types.ObjectId(id)) }
+        _id: { $in: projectIds }
       });
-  
+      
       return res.status(200).json({ projects });
   
     } catch (err) {

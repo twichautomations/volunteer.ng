@@ -586,12 +586,11 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
       // If requester is the creator, attach volunteer details
       if (project.creatorId === userId) {
         if (Array.isArray(project.volunteersJoined) && project.volunteersJoined.length > 0) {
-          // volunteersJoined contains plain Google ID strings
-          const volunteers = await User.find({ googleId: { $in: project.volunteersJoined } });
-          responsePayload.volunteers = volunteers;
+          // const userIds = project.volunteersJoined.map(entry => entry.userId);
+          // const volunteers = await User.find({ googleId: { $in: userIds } });
+          responsePayload.volunteers =  project.volunteersJoined;
         }
-      }
-      
+      } 
       // If requester is a volunteer, determine canApply
       else if (user.role === 'volunteer') {
         const hasJoined = user.projectsJoined.some(p => p.projectId === projectId);

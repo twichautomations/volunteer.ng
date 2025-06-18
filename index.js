@@ -876,6 +876,7 @@ app.delete('/delete-project/:projectId', async (req, res) => {
   });
   
 
+
 // GET /api/my-projects-by-status/:status
 app.get('/projects-by-org/:status', async (req, res) => {
   try {
@@ -896,7 +897,7 @@ app.get('/projects-by-org/:status', async (req, res) => {
     console.error('Error fetching projects:', err);
     return res.status(500).json({ message: 'Internal server error' });
   }
-
+});
   
 
   app.get('/user-joined-projects', async (req, res) => {

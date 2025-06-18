@@ -411,6 +411,7 @@ app.post('/save-project-data',  async (req, res) => {
         // if (!req.body.heading || !req.body.orgName || !req.body.status) {
         //     return res.status(400).json({ message: "Missing required fields: heading, orgName, or status" });
         // }
+        const userId = req.user ? req.user.googleId : null;
         console.log(req.user);
 
         const project = new Project();

@@ -523,8 +523,9 @@ app.get('/projects', async (req, res) => {
 
 
 app.delete('/delete-project/:userId/:projectId', async (req, res) => {
-    const { userId, projectId } = req.params;
+    const { projectId } = req.params;
   
+    const userId = req.user?.googleId;
     try {
       if (!mongoose.Types.ObjectId.isValid(projectId)) {
         return res.status(400).json({ message: 'Invalid project ID' });

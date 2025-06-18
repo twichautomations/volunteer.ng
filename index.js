@@ -415,7 +415,7 @@ app.post('/save-project-data',  async (req, res) => {
 
         const project = new Project();
 
-        project.creatorId = req.body.userId;
+        project.creatorId = userId;
         project.image = req.body.image;
         project.type = req.body.type;
         project.public_id = req.body.public_id;

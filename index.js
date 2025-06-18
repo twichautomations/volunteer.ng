@@ -857,10 +857,9 @@ app.delete('/delete-project/:projectId', async (req, res) => {
       if (!userId) {
         return res.status(401).json({ message: 'Unauthorized. Missing user info.' });
       }
+      const user = await User.findOne({ googleId: userId });
   
-      const user = await User.findOne({ userId });
-  
-      if (!userId) {
+      if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
   

@@ -860,7 +860,7 @@ app.delete('/delete-project/:projectId', async (req, res) => {
   
       const user = await User.findOne({ userId });
   
-      if (!user) {
+      if (!userId) {
         return res.status(404).json({ message: 'User not found' });
       }
   

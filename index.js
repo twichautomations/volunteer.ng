@@ -876,6 +876,29 @@ app.delete('/delete-project/:projectId', async (req, res) => {
   });
   
 
+// GET /api/my-projects-by-status/:status
+app.get('/projects-by-org/:status', async (req, res) => {
+  try {
+    const { status } = req.params;
+    const userId = req.user?.googleId;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized. User ID missing.' });
+    }
+
+    const projects = await Project.find({
+      creatorId: userId,
+      status: status
+    });
+
+    return res.status(200).json({ projects });
+  } catch (err) {
+    console.error('Error fetching projects:', err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+
+  
+
   app.get('/user-joined-projects', async (req, res) => {
     const userId = req.user ? req.user.googleId : null;
   

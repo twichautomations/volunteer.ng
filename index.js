@@ -848,6 +848,32 @@ app.delete('/delete-project/:projectId', async (req, res) => {
       res.status(500).json({ message: 'Internal server error.' });
     }
   });
+
+  app.get('/projects-by-status/:status', async (req, res) => {
+    try {
+      const { status } = req.params;
+      const userId = req.user?.googleId;
+  
+      if (!userId) {
+        return res.status(401).json({ message: 'Unauthorized. Missing user info.' });
+      }
+  
+      const user = await User.findOne({ userId });
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      const filteredProjects = (user.projectsJoined || []).filter(
+        project => project.status === status
+      );
+  
+      return res.status(200).json({ projects: filteredProjects });
+    } catch (err) {
+      console.error('Error fetching projects by status:', err);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  });
   
 
   app.get('/user-joined-projects', async (req, res) => {

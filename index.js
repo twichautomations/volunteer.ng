@@ -607,6 +607,23 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
   });
   
 
+  router.get('/my-projects', async (req, res) => {
+    try {
+      const userId = req.user ? req.user.googleId : null;
+  
+      if (!userId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+  
+      const projects = await Project.find({ creatorId: userId });
+  
+      res.status(200).json({ projects });
+    } catch (error) {
+      console.error('Error fetching user projects:', error);
+      res.status(500).json({ message: 'Server error fetching projects' });
+    }
+  });
+
 
   //edit or update a project
 

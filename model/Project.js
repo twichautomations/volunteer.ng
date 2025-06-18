@@ -68,9 +68,6 @@ const ProjectSchema = new Schema({
     requirements: {
         type: [String]
     },
-    volunteers: {
-        type: [String]
-    },
     benefits: {
         type: [String]
     },

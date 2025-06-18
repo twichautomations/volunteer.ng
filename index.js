@@ -1000,7 +1000,8 @@ app.get('/projects-by-org/:status', async (req, res) => {
         return res.status(400).json({ message: 'Invalid ID format' });
       }
       
-      const user = await User.findById(volunteerId);
+      //  user = await User.findById(volunteerId);
+       const user = await User.findOne({ googleId: volunteerId});
       // const user = await User.findOne({ googleId: volunteerId });
   
       if (!user) {

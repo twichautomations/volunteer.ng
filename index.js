@@ -607,7 +607,7 @@ app.delete('/delete-project/:userId/:projectId', async (req, res) => {
   });
   
 
-  router.get('/my-projects', async (req, res) => {
+  app.get('/my-projects', async (req, res) => {
     try {
       const userId = req.user ? req.user.googleId : null;
   

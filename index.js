@@ -522,7 +522,7 @@ app.get('/projects', async (req, res) => {
 
 
 
-app.delete('/delete-project/:userId/:projectId', async (req, res) => {
+app.delete('/delete-project/:projectId', async (req, res) => {
     const { projectId } = req.params;
   
     const userId = req.user?.googleId;

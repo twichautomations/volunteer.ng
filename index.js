@@ -548,10 +548,14 @@ app.delete('/delete-project/:projectId', async (req, res) => {
       // Then delete the project
       await Project.deleteOne({ _id: projectId });
   
-      res.status(200).json({ message: 'Project and image deleted successfully' });
+      res.status(200).json({ message: 'Project and image deleted successfully',
+        status: true
+       });
     } catch (error) {
       console.error('Delete error:', error);
-      res.status(500).json({ message: 'Server error' });
+      res.status(500).json({ message: 'Server error',
+        status: false
+       });
     }
   });
 
@@ -918,7 +922,7 @@ app.delete('/delete-project/:projectId', async (req, res) => {
     // const { volunteerId, projectId, status } = req.body;
     const volunteerId = req.body.volunteerId;
     const projectId = req.body.projectId;
-    const status = req.body.volunteerId;
+    const status = req.body.status;
   
     console.log(`status is ${status}`);
 

@@ -14,6 +14,10 @@ const cookieParser = require('cookie-parser');
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cron = require('node-cron');
+const nodemailer = require('nodemailer');
+const jwt = require('jsonwebtoken');
+
 
 
 
@@ -81,14 +85,14 @@ cloudinary.config({
 });
 
 
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'project_uploads', // optional folder in Cloudinary
-    allowed_formats: ['jpg', 'png', 'jpeg', 'webp']
+// Configure transporter (use environment variables for security)
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASS
   }
 });
-
 
 
   
@@ -226,6 +230,8 @@ app.get('/logout', (req, res) => {
 
 // Dashboard (Protected)
 app.get('/dashboard', async (req, res) => {
+
+  
     try{
 
     
@@ -412,6 +418,8 @@ app.post('/save-project-data',  async (req, res) => {
         //     return res.status(400).json({ message: "Missing required fields: heading, orgName, or status" });
         // }
         const userId = req.user ? req.user.googleId : null;
+
+
         console.log(req.user);
 
         const project = new Project();
@@ -766,6 +774,9 @@ app.delete('/delete-project/:projectId', async (req, res) => {
         }
   
         await project.save();
+
+
+
       }
   
    // Check if user already joined the project
@@ -780,6 +791,18 @@ app.delete('/delete-project/:projectId', async (req, res) => {
         });
 
         await user.save();
+
+        transporter.sendMail({
+          from: `"VolunteerNg" <${process.env.MAIL_USER}>`,
+          to: project.contactEmail,
+          subject: 'Application to Project',
+          html: `<p>
+
+          A volunteer has applied to your project. Please check VolunteerNg for more details
+                
+                  </p>`
+        });
+
       }
   
       res.status(200).json({
@@ -1019,6 +1042,33 @@ app.get('/projects-by-org/:status', async (req, res) => {
   
       // Update the status
       projectEntry.status = status;
+
+      if(status == "accepted"){
+      transporter.sendMail({
+        from: `"VolunteerNg" <${process.env.MAIL_USER}>`,
+        to: user.email,
+        subject: 'Volunteer Accepted!',
+        html: `<p>Hi ${user.displayName},</p><p>
+                  
+        Congratulations!, You have been accepted to volunteer for a project you applied for.
+        Please check VolunteerNg for more details.
+            
+                </p>`
+      });
+    }
+    else{
+      transporter.sendMail({
+        from: `"VolunteerNg" <${process.env.MAIL_USER}>`,
+        to: user.email,
+        subject: 'Volunteer Rejected',
+        html: `<p>Hi ${user.displayName},</p><p>
+                  
+       The Organization has decided not to accept your volunteer proposal. 
+       Stick around and check other projects you can volunteer for on VolunteerNg.
+            
+                </p>`
+      });
+    }
   
       await user.save();
   

@@ -681,7 +681,7 @@ app.delete('/delete-project/:projectId', async (req, res) => {
         return res.status(403).json({ message: 'Unauthorized to edit this project' });
       }
 
-      const hasVolunteers = project.volunteers && project.volunteers.length > 0;
+      const hasVolunteers = project.maxVolunteers && project.volunteersJoined.length > 0;
 
       if (hasVolunteers) {
         return res.status(403).json({ message: 'Cannot edit project: Volunteers have already joined' });

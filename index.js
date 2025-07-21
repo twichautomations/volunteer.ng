@@ -331,7 +331,7 @@ catch (error) {
 app.get('/user', authenticateJWT, async (req, res) => {
     try {
 
-      const userId = req.user.userId;
+     const userId = req.user.userId;
 
         if (!userId) {
             return res.status(400).json({ error: 'Missing userId in request' });

@@ -96,30 +96,30 @@ const transporter = nodemailer.createTransport({
 
 
   
-app.use(cookieParser()); // ← Add this
-app.use(session({
-  secret: process.env.SESSION_SECRET, // Replace with your own secret
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: process.env.MONGO_URI, // Your MongoDB connection string
-    ttl: 14 * 24 * 60 * 60, // Session expiration time in seconds (14 days)
-    autoRemove: 'native' // Automatically remove expired sessions
-  }),
-  cookie: {
-    maxAge: 14 * 24 * 60 * 60 * 1000, // Cookie expiration time in milliseconds (14 days)
-    secure: process.env.NODE_ENV === 'production', // Set to true if using HTTPS
-    httpOnly: true,
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+// app.use(cookieParser()); // ← Add this
+// app.use(session({
+//   secret: process.env.SESSION_SECRET, // Replace with your own secret
+//   resave: false,
+//   saveUninitialized: false,
+//   store: MongoStore.create({
+//     mongoUrl: process.env.MONGO_URI, // Your MongoDB connection string
+//     ttl: 14 * 24 * 60 * 60, // Session expiration time in seconds (14 days)
+//     autoRemove: 'native' // Automatically remove expired sessions
+//   }),
+//   cookie: {
+//     maxAge: 14 * 24 * 60 * 60 * 1000, // Cookie expiration time in milliseconds (14 days)
+//     secure: process.env.NODE_ENV === 'production', // Set to true if using HTTPS
+//     httpOnly: true,
+//     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
 
-  }
-}));
+//   }
+// }));
 
 app.set('trust proxy', 1);
 
 // Initialize Passport
 app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.session());
  // <-- This is needed to parse JSON requests
 
 
@@ -163,28 +163,46 @@ passport.use(new GoogleStrategy({
     return done(null, user);
 }));
 
-passport.serializeUser((user, done) => {
-    console.log("Serializing user:", user); // Debugging
-    done(null, user.googleId);  // Store googleId, NOT _id
-});
+// passport.serializeUser((user, done) => {
+//     console.log("Serializing user:", user); // Debugging
+//     done(null, user.googleId);  // Store googleId, NOT _id
+// });
 
-passport.deserializeUser(async (googleId, done) => {
-    console.log("Deserializing user with googleId:", googleId); // Debugging
-    try {
-        const user = await User.findOne({ googleId });
-        if (!user) {
-            console.log("User not found in database.");
-            return done(null, false);
-        }
-        console.log("User found:", user);
-        done(null, user);
-    } catch (err) {
-        console.error("Error in deserialization:", err);
-        done(err);
-    }
-});
+// passport.deserializeUser(async (googleId, done) => {
+//     console.log("Deserializing user with googleId:", googleId); // Debugging
+//     try {
+//         const user = await User.findOne({ googleId });
+//         if (!user) {
+//             console.log("User not found in database.");
+//             return done(null, false);
+//         }
+//         console.log("User found:", user);
+//         done(null, user);
+//     } catch (err) {
+//         console.error("Error in deserialization:", err);
+//         done(err);
+//     }
+// });
 
+const authenticateJWT = (req, res, next) => {
+  const authHeader = req.headers.authorization || req.query.token;
 
+  const token = authHeader?.startsWith('Bearer ')
+    ? authHeader.split(' ')[1]
+    : authHeader;
+
+  if (!token) {
+    return res.status(401).json({ message: 'No token provided' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(403).json({ message: 'Invalid token' });
+  }
+};
 
 
 
@@ -196,75 +214,102 @@ app.get('/auth/google',
 
 // Google Callback Route
 app.get('/auth/google_callback',
-  passport.authenticate('google', { failureRedirect: '/', session: true }),
+  passport.authenticate('google', { failureRedirect: '/', session: false }),
   (req, res) => {
-    console.log("Authenticated user:", req.user); // This should be defined
-    req.session.save(() => {
-      res.redirect('/dashboard');
-    });
+    const token = jwt.sign(
+      { userId: req.user.googleId },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // 👇 Send the token to the opener window securely
+    res.send(`
+      <html>
+        <body>
+          <script>
+            window.opener.postMessage(
+              { token: "${token}" },
+              'https://volunteerng.vercel.app'
+            );
+            window.close();
+          </script>
+        </body>
+      </html>
+    `);
   }
 );
 
 
 
 // Logout Route
-app.get('/logout', (req, res) => {
-    req.logout((err) => {
-        if (err) {
-            console.error("Logout error:", err);
-            return res.status(500).json({ message: "Error during logout" });
-        }
+// app.get('/logout', (req, res) => {
+//     req.logout((err) => {
+//         if (err) {
+//             console.error("Logout error:", err);
+//             return res.status(500).json({ message: "Error during logout" });
+//         }
 
-        req.session.destroy((err) => {
-            if (err) {
-                console.error("Session destruction error:", err);
-            }
+//         req.session.destroy((err) => {
+//             if (err) {
+//                 console.error("Session destruction error:", err);
+//             }
 
-            // ✅ Return JSON success response
-            res.status(200).json({ message: "Logged out successfully" });
-        });
-    });
-});
+//             // ✅ Return JSON success response
+//             res.status(200).json({ message: "Logged out successfully" });
+//         });
+//     });
+// });
 
 
 
 // Dashboard (Protected)
-app.get('/dashboard', async (req, res) => {
+app.get('/dashboard', authenticateJWT, async (req, res) => {
 
   
     try{
 
-    
-    if (!req.isAuthenticated()) {
-        return res.status(401).send('Unauthorized');
-    }
-    const userId = req.user ? req.user.googleId : null;
+      const userId = req.user.userId;
 
-    console.log('User from dashboard session:', req.user);
+      console.log('User from JWT:', req.user);
+
+
 
     let user = await User.findOne({ googleId:userId});
 
     if (!user.role || user.role === '') {
       console.log("User has not registred at all");
-        return res.redirect('https://volunteerng.vercel.app/join');
+        // return res.redirect('https://volunteerng.vercel.app/join');
+        return res.json({ onboarded: false }); 
     }
     else if ( user.role == "volunteer"  && user.phone === ""){
       console.log("user has started registration but not completed");
-        return res.redirect('https://volunteerng.vercel.app/onboarding/volunteer');
+        // return res.redirect('https://volunteerng.vercel.app/onboarding/volunteer');
+        return res.json({ onboarded: false ,
+          user: volunteer,
+        });
     }
     
     else if ( user.role == "organization" && user.industry === ""){
       console.log("user has started registration but not completed");
-        return res.redirect('https://volunteerng.vercel.app/onboarding/org');
+        // return res.redirect('https://volunteerng.vercel.app/onboarding/org');
+        return res.json({ onboarded: false ,
+          user: organization,
+        });
     }
     else if ( user.role == "volunteer" && user.industry != ""){
       console.log("user has started registration and completed");
-      return res.redirect('https://volunteerng.vercel.app/project/volunteer');
+      // return res.redirect('https://volunteerng.vercel.app/project/volunteer');
+      return res.json({ onboarded: true ,
+        user:volunteer,
+      });
   }
 
   else if ( user.role == "organization" && user.industry != ""){
     console.log("user has started registration and completed");
-    return res.redirect('https://volunteerng.vercel.app/project/organization');
+    // return res.redirect('https://volunteerng.vercel.app/project/organization');]
+    return res.json({ onboarded: true ,
+      user: organization,
+    });
 }
     // res.redirect(`https://volunteerng.vercel.app/join?userId=${userId}`);
 }
@@ -283,12 +328,10 @@ catch (error) {
 
 
 
-app.get('/user', async (req, res) => {
+app.get('/user', authenticateJWT, async (req, res) => {
     try {
 
-      const userId = req.user ? req.user.googleId : null; // GET requests usually don't use body
-        // const userId = req.query.userId; // better practice: use query params for GET
-        console.log('req.user from session:', req.user);
+      const userId = req.user.userId;
 
         if (!userId) {
             return res.status(400).json({ error: 'Missing userId in request' });

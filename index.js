@@ -364,9 +364,9 @@ app.get('/user', authenticateJWT, async (req, res) => {
 
 
 
-app.post('/save-user-type', async (req, res) => {
+app.post('/save-user-type', authenticateJWT ,async (req, res) => {
     try {
-      const userId = req.user ? req.user.googleId : null;
+      const userId = req.user.userId;
         const  role = req.body.role;
 
         if (!userId || !role) {
@@ -391,11 +391,11 @@ app.post('/save-user-type', async (req, res) => {
     }
 });
 
-app.post('/save-user-data', async (req, res) => {
+app.post('/save-user-data', authenticateJWT, async (req, res) => {
     try {
 
 
-      const userId = req.user ? req.user.googleId : null;
+      const userId = req.user.userId;
     
 
         // Find user by Google ID
@@ -455,12 +455,13 @@ app.post('/save-user-data', async (req, res) => {
 
 
 
-app.post('/save-project-data',  async (req, res) => {
+app.post('/save-project-data', authenticateJWT, async (req, res) => {
     try {
         // if (!req.body.heading || !req.body.orgName || !req.body.status) {
         //     return res.status(400).json({ message: "Missing required fields: heading, orgName, or status" });
         // }
-        const userId = req.user ? req.user.googleId : null;
+
+        const userId = req.user.userId;
 
 
         console.log(req.user);
@@ -573,10 +574,10 @@ app.get('/projects', async (req, res) => {
 
 
 
-app.delete('/delete-project/:projectId', async (req, res) => {
+app.delete('/delete-project/:projectId', authenticateJWT, async (req, res) => {
     const { projectId } = req.params;
   
-    const userId = req.user?.googleId;
+    const userId = req.user.userId;
     try {
       if (!mongoose.Types.ObjectId.isValid(projectId)) {
         return res.status(400).json({ message: 'Invalid project ID' });
@@ -610,9 +611,9 @@ app.delete('/delete-project/:projectId', async (req, res) => {
     }
   });
 
-  app.get('/project/:projectId', async (req, res) => {
+  app.get('/project/:projectId', authenticateJWT, async (req, res) => {
     const { projectId } = req.params;
-    const userId = req.user?.googleId;
+    const userId = req.user.userId;
   
     try {
       // Validate projectId
@@ -664,9 +665,12 @@ app.delete('/delete-project/:projectId', async (req, res) => {
   });
   
 
-  app.get('/my-projects', async (req, res) => {
+  app.get('/my-projects', authenticateJWT,  async (req, res) => {
     try {
-      const userId = req.user ? req.user.googleId : null;
+      // const userId = req.user ? req.user.googleId : null;
+
+      const userId = req.user.userId;
+
   
       if (!userId) {
         return res.status(401).json({ message: 'User not authenticated' });
@@ -684,7 +688,7 @@ app.delete('/delete-project/:projectId', async (req, res) => {
 
   //edit or update a project
 
-  app.put('/update-project/:projectId', async (req, res) => {
+  app.put('/update-project/:projectId', authenticateJWT ,async (req, res) => {
     try{
     const { projectId } = req.params;
     const {
@@ -708,8 +712,9 @@ app.delete('/delete-project/:projectId', async (req, res) => {
       tags
     } = req.body;
 
-    const userId = req.user ? req.user.googleId : null;
-    
+     const userId = req.user.userId;
+
+  
       if (!mongoose.Types.ObjectId.isValid(projectId)) {
         return res.status(400).json({ message: 'Invalid project ID format' });
       }
@@ -763,12 +768,13 @@ app.delete('/delete-project/:projectId', async (req, res) => {
     }
   });
 
-  app.post('/join-project', async (req, res) => {
+  app.post('/join-project', authenticateJWT, async (req, res) => {
     const {
       projectId,name,email,phone,qualifications,experience,skills,availability,message
     } = req.body;
 
-    const userId = req.user ? req.user.googleId : null;
+
+    const userId = req.user.userId;
   
     if (!userId || !projectId) {
       return res.status(400).json({ message: 'userId and projectId are required.' });
@@ -864,9 +870,9 @@ app.delete('/delete-project/:projectId', async (req, res) => {
 
 
 
-  app.post('/leave-project', async (req, res) => {
+  app.post('/leave-project',authenticateJWT, async (req, res) => {
     const { projectId } = req.body;
-    const userId = req.user ? req.user.googleId : null;
+    const userId = req.user.userId;
   
     if (!userId || !projectId) {
       return res.status(400).json({ message: 'userId and projectId are required.' });
@@ -915,7 +921,10 @@ app.delete('/delete-project/:projectId', async (req, res) => {
     }
   });
 
-  app.get('/projects-by-status/:status', async (req, res) => {
+  app.get('/projects-by-status/:status',authenticateJWT, async (req, res) => {
+
+    const userId = req.user.userId;
+
     try {
       const { status } = req.params;
       const userId = req.user?.googleId;
@@ -958,10 +967,13 @@ app.delete('/delete-project/:projectId', async (req, res) => {
 
 
 // GET /api/my-projects-by-status/:status
-app.get('/projects-by-org/:status', async (req, res) => {
+app.get('/projects-by-org/:status', authenticateJWT, async (req, res) => {
+  
+  const userId = req.user.userId;
+
   try {
     const { status } = req.params;
-    const userId = req.user?.googleId;
+   
 
     if (!userId) {
       return res.status(401).json({ message: 'Unauthorized. User ID missing.' });
@@ -980,8 +992,8 @@ app.get('/projects-by-org/:status', async (req, res) => {
 });
   
 
-  app.get('/user-joined-projects', async (req, res) => {
-    const userId = req.user ? req.user.googleId : null;
+  app.get('/user-joined-projects', authenticateJWT, async (req, res) => {
+    const userId = req.user.userId;
   
     if (!userId) {
       return res.status(400).json({ message: "Missing userId in request" });

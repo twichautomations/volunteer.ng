@@ -231,7 +231,7 @@ app.get('/auth/google_callback',
               { token: "${token}" },
               'https://volunteerng.vercel.app'
             );
-            window.close();
+            // window.close();
           </script>
         </body>
       </html>

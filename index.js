@@ -279,13 +279,15 @@ app.get('/dashboard', authenticateJWT, async (req, res) => {
     if (!user.role || user.role === '') {
       console.log("User has not registred at all");
         // return res.redirect('https://volunteerng.vercel.app/join');
-        return res.json({ onboarded: false }); 
+        return res.json({ onboarded: false ,
+          role: "none",
+        }); 
     }
     else if ( user.role == "volunteer"  && user.phone === ""){
       console.log("user has started registration but not completed");
         // return res.redirect('https://volunteerng.vercel.app/onboarding/volunteer');
         return res.json({ onboarded: false ,
-          user: volunteer,
+          role: "volunteer",
         });
     }
     
@@ -293,13 +295,14 @@ app.get('/dashboard', authenticateJWT, async (req, res) => {
       console.log("user has started registration but not completed");
         // return res.redirect('https://volunteerng.vercel.app/onboarding/org');
         return res.json({ onboarded: false ,
-        
+          role: "organization",
         });
     }
     else if ( user.role == "volunteer" && user.industry != ""){
       console.log("user has started registration and completed");
       // return res.redirect('https://volunteerng.vercel.app/project/volunteer');
       return res.json({ onboarded: true ,
+        role: "volunteer"
       });
   }
 
@@ -307,7 +310,7 @@ app.get('/dashboard', authenticateJWT, async (req, res) => {
     console.log("user has started registration and completed");
     // return res.redirect('https://volunteerng.vercel.app/project/organization');]
     return res.json({ onboarded: true ,
-      user: organization,
+      role: "organization",
     });
 }
     // res.redirect(`https://volunteerng.vercel.app/join?userId=${userId}`);

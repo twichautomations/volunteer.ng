@@ -293,14 +293,13 @@ app.get('/dashboard', authenticateJWT, async (req, res) => {
       console.log("user has started registration but not completed");
         // return res.redirect('https://volunteerng.vercel.app/onboarding/org');
         return res.json({ onboarded: false ,
-          user: organization,
+        
         });
     }
     else if ( user.role == "volunteer" && user.industry != ""){
       console.log("user has started registration and completed");
       // return res.redirect('https://volunteerng.vercel.app/project/volunteer');
       return res.json({ onboarded: true ,
-        user:volunteer,
       });
   }
 

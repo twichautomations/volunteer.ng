@@ -929,7 +929,7 @@ app.delete('/delete-project/:projectId', authenticateJWT, async (req, res) => {
 
     try {
       const { status } = req.params;
-      const userId = req.user?.googleId;
+    //  const userId = req.user?.googleId;
   
       if (!userId) {
         return res.status(401).json({ message: 'Unauthorized. Missing user info.' });
